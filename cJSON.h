@@ -30,7 +30,7 @@ extern "C"
     int valueint;       /* 如果 type==cJSON_Number , 此项存储int值*/
     double valuedouble; /* 如果 type==cJSON_Number , 此项存储double值*/
 
-    char *string; /* 如果该项是某个对象的子元素，或是该对象子元素列表中的一项，则此处存储该项的名称字符串。 */
+    char *string; /* 用于存储对象的键名 */
   } cJSON;
 
   typedef struct cJSON_Hooks
