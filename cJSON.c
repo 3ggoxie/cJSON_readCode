@@ -525,10 +525,10 @@ cJSON *cJSON_ParseWithOpts(const char *value, const char **return_parse_end, int
 	if (!c)
 		return 0; /* 创建失败 */
 
-	end = parse_value(c, skip(value)); // mark:0
+	end = parse_value(c, skip(value));
 	if (!end)
 	{
-		cJSON_Delete(c);
+		cJSON_Delete(c); // mark:0
 		return 0;
 	} /* 解析失败，错误指针已设置 */
 
@@ -564,7 +564,7 @@ char *cJSON_PrintBuffered(cJSON *item, int prebuffer, int fmt)
 	return p.buffer;
 }
 
-/* 解析器核心 - 当遇到文本时，适当处理。 */ // mark:1
+/* 解析器核心 - 当遇到文本时，适当处理。 */
 static const char *parse_value(cJSON *item, const char *value)
 {
 	if (!value)
@@ -600,7 +600,7 @@ static const char *parse_value(cJSON *item, const char *value)
 	}
 	if (*value == '{') // 如果是左大括号，解析为对象
 	{
-		return parse_object(item, value); // mark:2
+		return parse_object(item, value);
 	}
 
 	ep = value; // 指向解析失败的字符位置
@@ -847,7 +847,7 @@ static char *print_array(cJSON *item, int depth, int fmt, printbuffer *p)
 }
 
 /* 根据文本构建对象 */
-static const char *parse_object(cJSON *item, const char *value) // mark:3
+static const char *parse_object(cJSON *item, const char *value)
 {
 	cJSON *child;
 	if (*value != '{')
@@ -881,12 +881,12 @@ static const char *parse_object(cJSON *item, const char *value) // mark:3
 	while (*value == ',') // 匹配到逗号，继续解析对象中其他键值对，基本与上同
 	{
 		cJSON *new_item;
-		if (!(new_item = cJSON_New_Item()))
-			return 0; /* memory fail */
+		if (!(new_item = cJSON_New_Item())) // 为new_item分配空间，用来存储下一个键值对
+			return 0;						/* 内存分配失败 */
 		child->next = new_item;
-		new_item->prev = child;
-		child = new_item;
-		value = skip(parse_string(child, skip(value + 1)));
+		new_item->prev = child;								// 将新元素插入对象
+		child = new_item;									// 更新child指针
+		value = skip(parse_string(child, skip(value + 1))); // 跳过分隔逗号和空白字符，将键名赋给child后返回下一位置
 		if (!value)
 			return 0;
 		child->string = child->valuestring;
@@ -895,16 +895,16 @@ static const char *parse_object(cJSON *item, const char *value) // mark:3
 		{
 			ep = value;
 			return 0;
-		} /* fail! */
-		value = skip(parse_value(child, skip(value + 1))); /* skip any spacing, get the value. */
+		} /* 失败! */
+		value = skip(parse_value(child, skip(value + 1))); /* 解析并赋键值 */
 		if (!value)
 			return 0;
 	}
 
 	if (*value == '}')
-		return value + 1; /* end of array */
+		return value + 1; /* 对象解析结束 */
 	ep = value;
-	return 0; /* malformed. */
+	return 0; /* 格式错误，更新错误指针 */
 }
 
 /* Render an object to text. */
