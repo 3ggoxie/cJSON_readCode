@@ -8,7 +8,7 @@ void doit(char *text)
 	char *out;	 // 存放输出文本
 	cJSON *json; // 定义cJSON对象json，用于解析JSON字符串
 
-	json = cJSON_Parse(text); // 解析JSON字符串
+	json = cJSON_Parse(text); // 解析JSON字符串// mark:1
 	if (!json)
 	{
 		printf("Error before: [%s]\n", cJSON_GetErrorPtr());
@@ -153,7 +153,7 @@ int main(int argc, const char *argv[])
 	char text5[] = "[\n	 {\n	 \"precision\": \"zip\",\n	 \"Latitude\":  37.7668,\n	 \"Longitude\": -122.3959,\n	 \"Address\":   \"\",\n	 \"City\":      \"SAN FRANCISCO\",\n	 \"State\":     \"CA\",\n	 \"Zip\":       \"94107\",\n	 \"Country\":   \"US\"\n	 },\n	 {\n	 \"precision\": \"zip\",\n	 \"Latitude\":  37.371991,\n	 \"Longitude\": -122.026020,\n	 \"Address\":   \"\",\n	 \"City\":      \"SUNNYVALE\",\n	 \"State\":     \"CA\",\n	 \"Zip\":       \"94085\",\n	 \"Country\":   \"US\"\n	 }\n	 ]";
 
 	/* 对于每个 JSON 文本块，先进行解析，然后再将其重新构建: */
-	doit(text1);
+	doit(text1); // mark:0
 	doit(text2);
 	doit(text3);
 	doit(text4);
