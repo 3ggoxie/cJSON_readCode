@@ -15,14 +15,14 @@ extern "C"
 #define cJSON_Array 5
 #define cJSON_Object 6
 
-#define cJSON_IsReference 256
-#define cJSON_StringIsConst 512
+#define cJSON_IsReference 256   // 表示引用类型
+#define cJSON_StringIsConst 512 // 表示字符串是const类型
 
   /* cJSON 结构体: */
   typedef struct cJSON
   {
-    struct cJSON *next, *prev; /* next/prev 用于遍历数组或对象链. 或者, 使用 GetArraySize/GetArrayItem/GetObjectItem 函数进行操作. */
-    struct cJSON *child;       /* 对于数组或对象项，会有一个 child 指针指向数组或对象中的子元素。 */
+    struct cJSON *next, *prev; /* next/prev 用于遍历数组或对象链表中的同级元素. 或者, 使用 GetArraySize/GetArrayItem/GetObjectItem 函数进行操作. */
+    struct cJSON *child;       /* 对于数组或对象项，会有一个 child 指针指向数组或对象中的子级元素。 */
 
     int type; /* 表示节点类型，具体如上所述 */
 
