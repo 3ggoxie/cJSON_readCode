@@ -64,21 +64,30 @@ static cJSON *cJSON_New_Item(void)
 	return node;
 }
 
-/* Delete a cJSON structure. */
+/* 删除一个JSON结构体对象 */
 void cJSON_Delete(cJSON *c)
 {
-	cJSON *next;
-	while (c)
+	cJSON *next; // 用于暂存下一个节点指针。
+	while (c)	 // 对象非空
 	{
-		next = c->next;
+		next = c->next; // 暂存子节点指针。
+
+		/*
+		这里用位运算比直接判断 c->type == cJSON_IsReference 更快，
+		cJSON_IsReference和cJSON_StringIsConst都是较大的二进制数，
+		这里按位与操作相当于判断最高位是否是1。常规类型都是较小二进制数。
+		*/
+		// 如果当前节点不是引用类型并且有子节点，则递归释放子节点占用的内存
 		if (!(c->type & cJSON_IsReference) && c->child)
 			cJSON_Delete(c->child);
+		// 如果当前节点不是引用类型并且值字符串不为空，则释放值字符串占用的内存
 		if (!(c->type & cJSON_IsReference) && c->valuestring)
 			cJSON_free(c->valuestring);
+		// 如果当前节点的字符串不是常量并且字符串不为空，则释放字符串占用的内存
 		if (!(c->type & cJSON_StringIsConst) && c->string)
 			cJSON_free(c->string);
-		cJSON_free(c);
-		c = next;
+		cJSON_free(c); // 释放当前节点。
+		c = next;	   // 更新循环判断条件，指向下一节点
 	}
 }
 
@@ -514,7 +523,7 @@ static const char *skip(const char *in)
 }
 
 /* 解析一个对象 - 创建一个新的根节点，并填充数据。 */
-cJSON *cJSON_ParseWithOpts(const char *value, const char **return_parse_end, int require_null_terminated)
+cJSON *cJSON_ParseWithOpts(const char *value, const char **return_parse_end, int require_null_terminated) // mark:3
 {
 	// end用于记录解析结束时的位置。
 	const char *end = 0;
@@ -525,12 +534,12 @@ cJSON *cJSON_ParseWithOpts(const char *value, const char **return_parse_end, int
 	if (!c)
 		return 0; /* 创建失败 */
 
-	end = parse_value(c, skip(value));
-	if (!end)
+	end = parse_value(c, skip(value)); // 把解析后返回的字符串指针赋值给end。
+	if (!end)						   // 空指针说明解析失败
 	{
-		cJSON_Delete(c); // mark:0
-		return 0;
-	} /* 解析失败，错误指针已设置 */
+		cJSON_Delete(c); // 释放创建失败的cJSON对象
+		return 0;		 // 返回空指针表示解析失败
+	}
 
 	/* if we require null-terminated JSON without appended garbage, skip and then check for a null terminator */
 	if (require_null_terminated)
@@ -548,7 +557,7 @@ cJSON *cJSON_ParseWithOpts(const char *value, const char **return_parse_end, int
 	return c;
 }
 /* cJSON_Parse的默认选项 */
-cJSON *cJSON_Parse(const char *value) { return cJSON_ParseWithOpts(value, 0, 0); }
+cJSON *cJSON_Parse(const char *value) { return cJSON_ParseWithOpts(value, 0, 0); } // mark:2
 
 /* Render a cJSON item/entity/structure to text. */
 char *cJSON_Print(cJSON *item) { return print_value(item, 0, 1, 0); }
@@ -702,15 +711,15 @@ static const char *parse_array(cJSON *item, const char *value)
 		return 0;								   /* 内存分配失败 */
 	value = skip(parse_value(child, skip(value))); /* 跳过空白字符，将数组中解析的值赋给child后返回下一位置 */
 	if (!value)
-		return 0; // 未匹配右括号value就结束了，解析失败
+		return 0; // 空指针，解析失败
 
 	// 匹配到逗号，说明还有元素，继续解析数组中其他元素，以链表的方式插入元素
 	while (*value == ',')
 	{
 		cJSON *new_item;
 		if (!(new_item = cJSON_New_Item()))
-			return 0; /* 为新元素分配空间失败 */
-		child->next = new_item;
+			return 0;									   /* 为新元素分配空间失败 */
+		child->next = new_item;							   // 数组间成员用next链接，区别于上面的child
 		new_item->prev = child;							   // 将新元素插入数组
 		child = new_item;								   // 更新child指针
 		value = skip(parse_value(child, skip(value + 1))); // 为新元素赋值
@@ -881,9 +890,9 @@ static const char *parse_object(cJSON *item, const char *value)
 	while (*value == ',') // 匹配到逗号，继续解析对象中其他键值对，基本与上同
 	{
 		cJSON *new_item;
-		if (!(new_item = cJSON_New_Item())) // 为new_item分配空间，用来存储下一个键值对
-			return 0;						/* 内存分配失败 */
-		child->next = new_item;
+		if (!(new_item = cJSON_New_Item()))					// 为new_item分配空间，用来存储下一个键值对
+			return 0;										/* 内存分配失败 */
+		child->next = new_item;								// 对象间成员用next链接，区别于上面的child
 		new_item->prev = child;								// 将新元素插入对象
 		child = new_item;									// 更新child指针
 		value = skip(parse_string(child, skip(value + 1))); // 跳过分隔逗号和空白字符，将键名赋给child后返回下一位置
