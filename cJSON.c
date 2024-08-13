@@ -523,7 +523,7 @@ static const char *skip(const char *in)
 }
 
 /* 解析一个对象 - 创建一个新的根节点，并填充数据。 */
-cJSON *cJSON_ParseWithOpts(const char *value, const char **return_parse_end, int require_null_terminated) // mark:3
+cJSON *cJSON_ParseWithOpts(const char *value, const char **return_parse_end, int require_null_terminated)
 {
 	// end用于记录解析结束时的位置。
 	const char *end = 0;
@@ -541,17 +541,18 @@ cJSON *cJSON_ParseWithOpts(const char *value, const char **return_parse_end, int
 		return 0;		 // 返回空指针表示解析失败
 	}
 
-	/* if we require null-terminated JSON without appended garbage, skip and then check for a null terminator */
+	/* 如果要求JSON字符串以空字符终止且没有附加的垃圾字符，则跳过后检查空终止符 */
 	if (require_null_terminated)
 	{
 		end = skip(end);
-		if (*end)
+		if (*end) // 如果字符串没有以空字符终止，则释放创建的cJSON对象并返回空指针表示解析失败
 		{
 			cJSON_Delete(c);
 			ep = end;
 			return 0;
 		}
 	}
+	// 如果提供了return_parse_end指针，则设置其指向解析结束的位置。
 	if (return_parse_end)
 		*return_parse_end = end;
 	return c;
