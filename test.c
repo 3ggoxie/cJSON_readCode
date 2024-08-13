@@ -8,14 +8,15 @@ void doit(char *text)
 	char *out;	 // 存放输出文本
 	cJSON *json; // 定义cJSON对象json，用于解析JSON字符串
 
-	json = cJSON_Parse(text); // 解析JSON字符串// mark:1
+	json = cJSON_Parse(text); // 解析JSON字符串
 	if (!json)
 	{
+		// 解析失败，打印错误信息
 		printf("Error before: [%s]\n", cJSON_GetErrorPtr());
 	}
-	else
+	else // 解析成功，将JSON对象渲染为文本并存储在out变量中
 	{
-		out = cJSON_Print(json); // 将JSON对象渲染为文本
+		out = cJSON_Print(json); // 将JSON对象渲染为文本// mark:1
 		cJSON_Delete(json);		 // 释放JSON对象
 		printf("%s\n", out);
 		free(out); // 释放输出文本对象

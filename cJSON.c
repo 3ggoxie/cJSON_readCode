@@ -12,7 +12,7 @@
 
 static const char *ep; // 错误指针
 
-const char *cJSON_GetErrorPtr(void) { return ep; }
+const char *cJSON_GetErrorPtr(void) { return ep; } // 获取错误指针，该指针指向出现错误的第一个字符
 
 static int cJSON_strcasecmp(const char *s1, const char *s2)
 {
@@ -532,8 +532,8 @@ cJSON *cJSON_ParseWithOpts(const char *value, const char **return_parse_end, int
 	// 初始化ep为0，ep用于记录解析过程中的错误位置。
 	ep = 0;
 	if (!c)
-		return 0; /* 创建失败 */
-
+		return 0;					   /* 创建失败 */
+									   // bug:创建失败后打印错误信息时，ep是空指针
 	end = parse_value(c, skip(value)); // 把解析后返回的字符串指针赋值给end。
 	if (!end)						   // 空指针说明解析失败
 	{
@@ -558,7 +558,7 @@ cJSON *cJSON_ParseWithOpts(const char *value, const char **return_parse_end, int
 	return c;
 }
 /* cJSON_Parse的默认选项 */
-cJSON *cJSON_Parse(const char *value) { return cJSON_ParseWithOpts(value, 0, 0); } // mark:2
+cJSON *cJSON_Parse(const char *value) { return cJSON_ParseWithOpts(value, 0, 0); }
 
 /* Render a cJSON item/entity/structure to text. */
 char *cJSON_Print(cJSON *item) { return print_value(item, 0, 1, 0); }
