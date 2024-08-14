@@ -150,12 +150,12 @@ static int pow2gt(int x) // 本质是将二进制数的最高位1赋给所有位
 typedef struct // 打印缓冲区结构体
 {
 	char *buffer; // 缓冲区字符串
-	int length;	  // 缓冲区字符串长度
-	int offset;	  // 缓冲区字符串偏移量
+	int length;	  // 缓冲区最大长度
+	int offset;	  // 缓冲区字符串偏移量（已用长度）
 } printbuffer;
 
 /* 确保printbuffer结构体中的缓冲区足够大以容纳needed字节 */
-static char *ensure(printbuffer *p, int needed) // mark:5
+static char *ensure(printbuffer *p, int needed)
 {
 	// 分配新的缓冲区
 	char *newbuffer;
@@ -171,20 +171,20 @@ static char *ensure(printbuffer *p, int needed) // mark:5
 	if (needed <= p->length)		  // 缓冲区大小足够
 		return p->buffer + p->offset; // 返回偏移量后的缓冲区字符指针
 
-	newsize = pow2gt(needed); // mark:6
-	newbuffer = (char *)cJSON_malloc(newsize);
-	if (!newbuffer)
+	newsize = pow2gt(needed);				   // 内存对齐
+	newbuffer = (char *)cJSON_malloc(newsize); // 分配新的缓冲区内存
+	if (!newbuffer)							   // 分配失败
 	{
-		cJSON_free(p->buffer);
-		p->length = 0, p->buffer = 0;
+		cJSON_free(p->buffer);		  // 释放旧的缓冲区内存
+		p->length = 0, p->buffer = 0; // 重置缓冲区信息
 		return 0;
 	}
-	if (newbuffer)
-		memcpy(newbuffer, p->buffer, p->length);
-	cJSON_free(p->buffer);
-	p->length = newsize;
-	p->buffer = newbuffer;
-	return newbuffer + p->offset;
+	if (newbuffer)								 // 分配成功
+		memcpy(newbuffer, p->buffer, p->length); // 将旧的缓冲区内容复制到新的缓冲区
+	cJSON_free(p->buffer);						 // 释放旧的缓冲区内存
+	p->length = newsize;						 // 更新缓冲区大小
+	p->buffer = newbuffer;						 // 更新缓冲区字符指针
+	return newbuffer + p->offset;				 // 返回偏移量后的缓冲区字符指针
 }
 
 static int update(printbuffer *p)
