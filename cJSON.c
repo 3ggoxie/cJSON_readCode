@@ -135,35 +135,43 @@ static const char *parse_number(cJSON *item, const char *num)
 	return num;
 }
 
-static int pow2gt(int x)
+/* 计算大于或等于x的最小的2的幂次方 */
+static int pow2gt(int x) // 本质是将二进制数的最高位1赋给所有位后再加1
 {
-	--x;
-	x |= x >> 1;
-	x |= x >> 2;
-	x |= x >> 4;
-	x |= x >> 8;
-	x |= x >> 16;
-	return x + 1;
+	--x;		  // 处理已经是2的幂次方的边界情况
+	x |= x >> 1;  // 最高位1赋给次高位
+	x |= x >> 2;  // 最高两位1赋给次高两位
+	x |= x >> 4;  // 最高四位1赋给次高四位
+	x |= x >> 8;  // 最高八位1赋给次高八位
+	x |= x >> 16; // 最高十六位1赋给次高十六位，至此，最高位下所有位都为1
+	return x + 1; // 加1得到最小大于等于x的2的幂次方
 }
 
-typedef struct
+typedef struct // 打印缓冲区结构体
 {
-	char *buffer;
-	int length;
-	int offset;
+	char *buffer; // 缓冲区字符串
+	int length;	  // 缓冲区字符串长度
+	int offset;	  // 缓冲区字符串偏移量
 } printbuffer;
 
-static char *ensure(printbuffer *p, int needed)
+/* 确保printbuffer结构体中的缓冲区足够大以容纳needed字节 */
+static char *ensure(printbuffer *p, int needed) // mark:5
 {
+	// 分配新的缓冲区
 	char *newbuffer;
+	// 新的缓冲区大小
 	int newsize;
+
+	// 检查缓冲区是否有效
 	if (!p || !p->buffer)
 		return 0;
-	needed += p->offset;
-	if (needed <= p->length)
-		return p->buffer + p->offset;
 
-	newsize = pow2gt(needed);
+	needed += p->offset; // 加上偏移量后的长度
+
+	if (needed <= p->length)		  // 缓冲区大小足够
+		return p->buffer + p->offset; // 返回偏移量后的缓冲区字符指针
+
+	newsize = pow2gt(needed); // mark:6
 	newbuffer = (char *)cJSON_malloc(newsize);
 	if (!newbuffer)
 	{
@@ -560,8 +568,8 @@ cJSON *cJSON_ParseWithOpts(const char *value, const char **return_parse_end, int
 /* cJSON_Parse的默认选项 */
 cJSON *cJSON_Parse(const char *value) { return cJSON_ParseWithOpts(value, 0, 0); }
 
-/* Render a cJSON item/entity/structure to text. */
-char *cJSON_Print(cJSON *item) { return print_value(item, 0, 1, 0); }
+/* 将一个cJSON数据项（实体或结构）渲染成文本形式。 */
+char *cJSON_Print(cJSON *item) { return print_value(item, 0, 1, 0); } // mark:2
 char *cJSON_PrintUnformatted(cJSON *item) { return print_value(item, 0, 0, 0); }
 
 char *cJSON_PrintBuffered(cJSON *item, int prebuffer, int fmt)
@@ -617,19 +625,19 @@ static const char *parse_value(cJSON *item, const char *value)
 	return 0;	/* 失败 */
 }
 
-/* Render a value to text. */
-static char *print_value(cJSON *item, int depth, int fmt, printbuffer *p)
+/* 将值渲染成字符串。*/
+static char *print_value(cJSON *item, int depth, int fmt, printbuffer *p) // mark:3
 {
-	char *out = 0;
-	if (!item)
+	char *out = 0; // 用于存储渲染后的字符串
+	if (!item)	   // 错误的cJSON对象
 		return 0;
-	if (p)
+	if (p) // 缓冲区非空
 	{
-		switch ((item->type) & 255)
+		switch ((item->type) & 255) // type取低八位，提高效率
 		{
-		case cJSON_NULL:
+		case cJSON_NULL: // null类型
 		{
-			out = ensure(p, 5);
+			out = ensure(p, 5); // mark:4
 			if (out)
 				strcpy(out, "null");
 			break;
