@@ -129,8 +129,8 @@ static const char *parse_number(cJSON *item, const char *num)
 
 	n = sign * n * pow(10.0, (scale + subscale * signsubscale)); /* 计算最终结果 */
 
-	item->valuedouble = n;
-	item->valueint = (int)n;
+	item->valuedouble = n;	 // valuedouble存精确值
+	item->valueint = (int)n; // valueint存整数值
 	item->type = cJSON_Number;
 	return num;
 }
@@ -196,41 +196,50 @@ static int update(printbuffer *p)
 	return p->offset + strlen(str);
 }
 
-/* Render the number nicely from the given item into a string. */
+/* 把数字从所给的cJSON对象优雅地渲染成字符串。 */
 static char *print_number(cJSON *item, printbuffer *p)
 {
-	char *str = 0;
-	double d = item->valuedouble;
-	if (d == 0)
+	char *str = 0;				  // 用于接取数字字符串
+	double d = item->valuedouble; // 获取数字值
+	if (d == 0)					  // 如果双精度值为 0，进行特殊处理。
 	{
-		if (p)
-			str = ensure(p, 2);
+		if (p)					// 如果存在打印缓冲区
+			str = ensure(p, 2); // 确保缓冲区足够大,赋给str
 		else
-			str = (char *)cJSON_malloc(2); /* special case for 0. */
+			str = (char *)cJSON_malloc(2); /* 特殊处理0的情况 */
 		if (str)
-			strcpy(str, "0");
+			strcpy(str, "0"); // 将字符串"0"复制给str
+							  // bug:似乎缺少分配失败的处理
 	}
+	/*
+		如果双精度值与整数值相等，并且在 INT_MIN 和 INT_MAX 范围内，
+		则以整数形式输出。DBL_EPSILON是双精度浮点数的最小正误差值。
+		浮点数比较注意误差不要直接用 ==
+	*/
 	else if (fabs(((double)item->valueint) - d) <= DBL_EPSILON && d <= INT_MAX && d >= INT_MIN)
 	{
 		if (p)
 			str = ensure(p, 21);
 		else
-			str = (char *)cJSON_malloc(21); /* 2^64+1 can be represented in 21 chars. */
+			str = (char *)cJSON_malloc(21); /* 一个64位无符号整数的最大值加1可以用21个字符来表示 */
 		if (str)
-			sprintf(str, "%d", item->valueint);
+			sprintf(str, "%d", item->valueint); // 将整数值转换为字符串，并复制给str
 	}
-	else
+	else // 以浮点形式输出
 	{
 		if (p)
 			str = ensure(p, 64);
 		else
-			str = (char *)cJSON_malloc(64); /* This is a nice tradeoff. */
+			str = (char *)cJSON_malloc(64); /* 这里选择了一个合适的内存分配大小作为权衡 */
 		if (str)
 		{
-			if (fabs(floor(d) - d) <= DBL_EPSILON && fabs(d) < 1.0e60)
-				sprintf(str, "%.0f", d);
+			// 当d是非常接近整数的小数，或者d的绝对值小于1.0e60时，保留整数部分即可
+			if (fabs(floor(d) - d) <= DBL_EPSILON && fabs(d) < 1.0e60) // floor是向下取整，给了64个字符，不超过60位不用科学计数法
+				sprintf(str, "%.0f", d);							   // 小数点后保留零位
+			// 当d的绝对值非常小（小于1.0e-6）或非常大（大于1.0e9）时，使用科学计数法格式化
 			else if (fabs(d) < 1.0e-6 || fabs(d) > 1.0e9)
 				sprintf(str, "%e", d);
+			// 在其他情况下，使用标准的浮点数格式化
 			else
 				sprintf(str, "%f", d);
 		}
@@ -637,11 +646,11 @@ static char *print_value(cJSON *item, int depth, int fmt, printbuffer *p) // mar
 		{
 		case cJSON_NULL: // null类型
 		{
-			out = ensure(p, 5); // mark:4
+			out = ensure(p, 5);
 			if (out)
-				strcpy(out, "null");
+				strcpy(out, "null"); // 将字符串"null"复制到缓冲区中
 			break;
-		}
+		} // 下同
 		case cJSON_False:
 		{
 			out = ensure(p, 6);
@@ -656,8 +665,8 @@ static char *print_value(cJSON *item, int depth, int fmt, printbuffer *p) // mar
 				strcpy(out, "true");
 			break;
 		}
-		case cJSON_Number:
-			out = print_number(item, p);
+		case cJSON_Number:				 // 数字类型
+			out = print_number(item, p); // mark:4
 			break;
 		case cJSON_String:
 			out = print_string(item, p);
