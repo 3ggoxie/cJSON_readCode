@@ -420,34 +420,34 @@ static const char *parse_string(cJSON *item, const char *str)
 	return ptr;
 }
 
-/* Render the cstring provided to an escaped version that can be printed. */
+/* 将提供的 C 字符串转换为可以打印的转义版本。 */
 static char *print_string_ptr(const char *str, printbuffer *p)
 {
-	const char *ptr;
-	char *ptr2, *out;
-	int len = 0, flag = 0;
-	unsigned char token;
+	const char *ptr;	   // 用来遍历的指针
+	char *ptr2, *out;	   // ptr2临时指针用来赋值，out记录返回字符串
+	int len = 0, flag = 0; // len用于记录字符串长度，flag用于标记是否有特殊字符
+	unsigned char token;   // 遍历字符串时暂存字符
 
-	for (ptr = str; *ptr; ptr++)
+	for (ptr = str; *ptr; ptr++) // 遍历字符串str检查是否有特殊字符
 		flag |= ((*ptr > 0 && *ptr < 32) || (*ptr == '\"') || (*ptr == '\\')) ? 1 : 0;
-	if (!flag)
+	if (!flag) // 没有特殊字符，直接返回
 	{
-		len = ptr - str;
-		if (p)
-			out = ensure(p, len + 3);
-		else
-			out = (char *)cJSON_malloc(len + 3);
+		len = ptr - str;						 // 记录字符串长度
+		if (p)									 // 有输出缓冲区
+			out = ensure(p, len + 3);			 // +3是为首尾引号和一个终结字符
+		else									 // 没有输出缓冲区
+			out = (char *)cJSON_malloc(len + 3); // 手动分配
 		if (!out)
-			return 0;
-		ptr2 = out;
-		*ptr2++ = '\"';
-		strcpy(ptr2, str);
-		ptr2[len] = '\"';
-		ptr2[len + 1] = 0;
+			return 0;	   // 内存分配失败
+		ptr2 = out;		   // ptr2指向新分配的空间
+		*ptr2++ = '\"';	   // 首引号
+		strcpy(ptr2, str); // 复制字符串
+		ptr2[len] = '\"';  // 尾引号
+		ptr2[len + 1] = 0; // 终结字符
 		return out;
 	}
 
-	if (!str)
+	if (!str) // 处理空指针
 	{
 		if (p)
 			out = ensure(p, 3);
@@ -455,38 +455,39 @@ static char *print_string_ptr(const char *str, printbuffer *p)
 			out = (char *)cJSON_malloc(3);
 		if (!out)
 			return 0;
-		strcpy(out, "\"\"");
+		strcpy(out, "\"\""); // 复制一个只包含引号的空字符串
 		return out;
 	}
-	ptr = str;
+	ptr = str; // ptr复位，计算有特殊字符时的长度
 	while ((token = *ptr) && ++len)
 	{
-		if (strchr("\"\\\b\f\n\r\t", token))
-			len++;
+		if (strchr("\"\\\b\f\n\r\t", token)) // strchr函数用于查找一个字符在字符串中首次出现的位置。
+			len++;							 // 为转义符增加额外长度
 		else if (token < 32)
-			len += 5;
+			len += 5; // 为不可见字符增加额外长度
 		ptr++;
 	}
-
+	// 同上
 	if (p)
 		out = ensure(p, len + 3);
 	else
 		out = (char *)cJSON_malloc(len + 3);
 	if (!out)
-		return 0;
+		return 0; // 内存分配失败
 
-	ptr2 = out;
-	ptr = str;
-	*ptr2++ = '\"';
-	while (*ptr)
+	ptr2 = out;		// ptr2指向新分配的空间
+	ptr = str;		// ptr复位，开始复制字符串
+	*ptr2++ = '\"'; // 首引号
+	while (*ptr)	// 字符串内容
 	{
-		if ((unsigned char)*ptr > 31 && *ptr != '\"' && *ptr != '\\')
-			*ptr2++ = *ptr++;
+		if ((unsigned char)*ptr > 31 && *ptr != '\"' && *ptr != '\\') // 普通字符
+			*ptr2++ = *ptr++;										  // 直接复制
 		else
 		{
-			*ptr2++ = '\\';
+			*ptr2++ = '\\'; // 先加转义字符
 			switch (token = *ptr++)
 			{
+				// 连入对应的转义字符
 			case '\\':
 				*ptr2++ = '\\';
 				break;
@@ -509,17 +510,17 @@ static char *print_string_ptr(const char *str, printbuffer *p)
 				*ptr2++ = 't';
 				break;
 			default:
-				sprintf(ptr2, "u%04x", token);
+				sprintf(ptr2, "u%04x", token); // 特殊字符以16进制转换为unicode字符串连入输出字符串
 				ptr2 += 5;
 				break; /* escape and print */
 			}
 		}
 	}
-	*ptr2++ = '\"';
-	*ptr2++ = 0;
+	*ptr2++ = '\"'; // 尾引号
+	*ptr2++ = 0;	// 终结字符
 	return out;
 }
-/* Invote print_string_ptr (which is useful) on an item. */
+/* 对一个项调用print_string_ptr (which is useful) */
 static char *print_string(cJSON *item, printbuffer *p) { return print_string_ptr(item->valuestring, p); }
 
 /* Predeclare these prototypes. */
@@ -665,14 +666,14 @@ static char *print_value(cJSON *item, int depth, int fmt, printbuffer *p) // mar
 				strcpy(out, "true");
 			break;
 		}
-		case cJSON_Number:				 // 数字类型
-			out = print_number(item, p); // mark:4
+		case cJSON_Number: // 数字类型
+			out = print_number(item, p);
 			break;
-		case cJSON_String:
+		case cJSON_String: // 字符串类型
 			out = print_string(item, p);
 			break;
 		case cJSON_Array:
-			out = print_array(item, depth, fmt, p);
+			out = print_array(item, depth, fmt, p); // mark:4
 			break;
 		case cJSON_Object:
 			out = print_object(item, depth, fmt, p);
