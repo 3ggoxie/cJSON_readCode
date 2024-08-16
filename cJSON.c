@@ -187,13 +187,14 @@ static char *ensure(printbuffer *p, int needed)
 	return newbuffer + p->offset;				 // 返回偏移量后的缓冲区字符指针
 }
 
+/* 更新打印缓冲区的偏移量 */
 static int update(printbuffer *p)
 {
 	char *str;
 	if (!p || !p->buffer)
-		return 0;
-	str = p->buffer + p->offset;
-	return p->offset + strlen(str);
+		return 0;					// 缓冲区无效
+	str = p->buffer + p->offset;	// 获取新增字符指针
+	return p->offset + strlen(str); // 在原有偏移量上加上新增字符的长度
 }
 
 /* 把数字从所给的cJSON对象优雅地渲染成字符串。 */
@@ -579,7 +580,7 @@ cJSON *cJSON_ParseWithOpts(const char *value, const char **return_parse_end, int
 cJSON *cJSON_Parse(const char *value) { return cJSON_ParseWithOpts(value, 0, 0); }
 
 /* 将一个cJSON数据项（实体或结构）渲染成文本形式。 */
-char *cJSON_Print(cJSON *item) { return print_value(item, 0, 1, 0); } // mark:2
+char *cJSON_Print(cJSON *item) { return print_value(item, 0, 1, 0); } // 默认调用深度为0// mark:2
 char *cJSON_PrintUnformatted(cJSON *item) { return print_value(item, 0, 0, 0); }
 
 char *cJSON_PrintBuffered(cJSON *item, int prebuffer, int fmt)
@@ -752,82 +753,82 @@ static const char *parse_array(cJSON *item, const char *value)
 	return 0; /* 非正常的情况，一般是数组的格式不正确 */
 }
 
-/* Render an array to text */
-static char *print_array(cJSON *item, int depth, int fmt, printbuffer *p)
+/* 将数组选染成文本 */
+static char *print_array(cJSON *item, int depth, int fmt, printbuffer *p) // mark:5
 {
-	char **entries;
-	char *out = 0, *ptr, *ret;
-	int len = 5;
-	cJSON *child = item->child;
-	int numentries = 0, i = 0, fail = 0;
-	size_t tmplen = 0;
+	char **entries;						 // 用于存储每个数组元素的字符串数组
+	char *out = 0, *ptr, *ret;			 // out 用于存储输出字符串,ret用于暂存解析的数组元素，ptr用于遍历赋值
+	int len = 5;						 // 用于动态调整输出字符串长度的变量
+	cJSON *child = item->child;			 // 指向数组的第一个元素
+	int numentries = 0, i = 0, fail = 0; // numentries记录数组条目数量，i用来暂存缓存区的偏移量，fail用来标记是否解析失败
+	size_t tmplen = 0;					 // 用于动态分配的临时长度变量
 
-	/* How many entries in the array? */
-	while (child)
+	/* 数组中有几个条目 */
+	while (child) // 遍历数组
 		numentries++, child = child->next;
-	/* Explicitly handle numentries==0 */
+	/* 显式处理空数组 */
 	if (!numentries)
 	{
 		if (p)
-			out = ensure(p, 3);
+			out = ensure(p, 3); // 3=左右中括号加一个结束标记
 		else
 			out = (char *)cJSON_malloc(3);
 		if (out)
 			strcpy(out, "[]");
 		return out;
 	}
-
+	// 如果用printbuffer输出
 	if (p)
 	{
-		/* Compose the output array. */
+		/* 组成输出数组 */
 		i = p->offset;
 		ptr = ensure(p, 1);
 		if (!ptr)
 			return 0;
-		*ptr = '[';
-		p->offset++;
-		child = item->child;
-		while (child && !fail)
+		*ptr = '[';			   // 左中括号赋值
+		p->offset++;		   // 更新缓存区偏移量
+		child = item->child;   // 指针复位
+		while (child && !fail) // 无失败的情况下遍历数组
 		{
-			print_value(child, depth + 1, fmt, p);
-			p->offset = update(p);
-			if (child->next)
+			print_value(child, depth + 1, fmt, p); // 递归调用解析数组元素??这里不是应该用*ptr去接这个值吗
+			p->offset = update(p);				   // 更新缓存区偏移量
+			if (child->next)					   // 还有下一个元素，打印逗号
 			{
-				len = fmt ? 2 : 1;
+				len = fmt ? 2 : 1; // 跟据是否格式化为len赋值
 				ptr = ensure(p, len + 1);
 				if (!ptr)
 					return 0;
-				*ptr++ = ',';
-				if (fmt)
+				*ptr++ = ','; // 逗号
+				if (fmt)	  // 格式化输出需要加一个空格
 					*ptr++ = ' ';
-				*ptr = 0;
-				p->offset += len;
+				*ptr = 0;		  // 结束标记
+				p->offset += len; // 更新缓存区偏移量
 			}
-			child = child->next;
+			child = child->next; // 指向数组下一个元素
 		}
-		ptr = ensure(p, 2);
+		ptr = ensure(p, 2); // 再分配两个字节
 		if (!ptr)
 			return 0;
-		*ptr++ = ']';
-		*ptr = 0;
-		out = (p->buffer) + i;
+		*ptr++ = ']';		   // 右中括号
+		*ptr = 0;			   // 结束标记
+		out = (p->buffer) + i; // 返回数组起始位置
 	}
 	else
 	{
-		/* Allocate an array to hold the values for each */
+		/* 分配一个字符串数组 */
 		entries = (char **)cJSON_malloc(numentries * sizeof(char *));
 		if (!entries)
-			return 0;
-		memset(entries, 0, numentries * sizeof(char *));
-		/* Retrieve all the results: */
-		child = item->child;
-		while (child && !fail)
+			return 0;									 // 内存分配失败
+		memset(entries, 0, numentries * sizeof(char *)); // 字符串数组初始化
+		/* 检索所有结果并存入字符串数组 */
+		child = item->child;   // 复位指向数组的第一个元素
+		while (child && !fail) // 无失败的情况下遍历数组
 		{
-			ret = print_value(child, depth + 1, fmt, 0);
-			entries[i++] = ret;
-			if (ret)
-				len += strlen(ret) + 2 + (fmt ? 1 : 0);
-			else
+			ret = print_value(child, depth + 1, fmt, 0); // 递归调用解析数组元素
+			entries[i++] = ret;							 // 为字符串数组赋值
+			if (ret)									 // 解析成功，计算长度
+				len += strlen(ret) + 2 + (fmt ? 1 : 0);	 //+2?格式不对啊?
+			else										 // 解析失败为fail赋值
 				fail = 1;
 			child = child->next;
 		}
