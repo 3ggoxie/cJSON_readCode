@@ -758,10 +758,10 @@ static char *print_array(cJSON *item, int depth, int fmt, printbuffer *p) // mar
 {
 	char **entries;						 // 用于存储每个数组元素的字符串数组
 	char *out = 0, *ptr, *ret;			 // out 用于存储输出字符串,ret用于暂存解析的数组元素，ptr用于遍历赋值
-	int len = 5;						 // 用于动态调整输出字符串长度的变量
+	int len = 5;						 // 用于记录输出字符串长度，这里5应该是故意放了个比较大，足以容纳数组元素长度的数字，一般包括左右括号加一个结束标记3就够了
 	cJSON *child = item->child;			 // 指向数组的第一个元素
 	int numentries = 0, i = 0, fail = 0; // numentries记录数组条目数量，i用来暂存缓存区的偏移量，fail用来标记是否解析失败
-	size_t tmplen = 0;					 // 用于动态分配的临时长度变量
+	size_t tmplen = 0;					 // 用于记录字符串数组元素的长度
 
 	/* 数组中有几个条目 */
 	while (child) // 遍历数组
@@ -790,7 +790,7 @@ static char *print_array(cJSON *item, int depth, int fmt, printbuffer *p) // mar
 		child = item->child;   // 指针复位
 		while (child && !fail) // 无失败的情况下遍历数组
 		{
-			print_value(child, depth + 1, fmt, p); // 递归调用解析数组元素??这里不是应该用*ptr去接这个值吗
+			print_value(child, depth + 1, fmt, p); // 递归调用解析数组元素，这里其实已经将解析好的元素存入缓冲区了
 			p->offset = update(p);				   // 更新缓存区偏移量
 			if (child->next)					   // 还有下一个元素，打印逗号
 			{
@@ -827,50 +827,55 @@ static char *print_array(cJSON *item, int depth, int fmt, printbuffer *p) // mar
 			ret = print_value(child, depth + 1, fmt, 0); // 递归调用解析数组元素
 			entries[i++] = ret;							 // 为字符串数组赋值
 			if (ret)									 // 解析成功，计算长度
-				len += strlen(ret) + 2 + (fmt ? 1 : 0);	 //+2?格式不对啊?
+				len += strlen(ret) + 2 + (fmt ? 1 : 0);	 // 这里我觉得+1就行了，和上面通过缓冲区分配保持一致，应该不影响结果只是多分配了空间。但是这里每一个元素都多分配了一个元素，一旦数组较大，内存浪费会很严重。
 			else										 // 解析失败为fail赋值
 				fail = 1;
 			child = child->next;
 		}
 
-		/* If we didn't fail, try to malloc the output string */
+		/* 如果没有失败，尝试为输出字符串分配内存 */
 		if (!fail)
 			out = (char *)cJSON_malloc(len);
-		/* If that fails, we fail. */
+		/* 分配失败，fail置1 */
 		if (!out)
 			fail = 1;
 
-		/* Handle failure. */
+		/* 处理失败 */
 		if (fail)
 		{
+			/*
+				这里释放字符串指针必须要先释放各数组元素（也就是每个字符串），然后再释放字符串数组。
+				因为字符串数组个元素间（也就是各字符串）并不是连续的，而存储指向他们的指针是连续的。
+				如果直接调用 cJSON_free(entries)，只会释放指针数组本身，而每个字符串的内存依然没有被释放。
+			*/
 			for (i = 0; i < numentries; i++)
 				if (entries[i])
-					cJSON_free(entries[i]);
-			cJSON_free(entries);
+					cJSON_free(entries[i]); // 释放每个字符串
+			cJSON_free(entries);			// 释放字符串数组
 			return 0;
 		}
 
-		/* Compose the output array. */
-		*out = '[';
-		ptr = out + 1;
+		/* 构造输出数组 */
+		*out = '[';	   // 左中括号
+		ptr = out + 1; // 利用临时指针ptr赋值，后面out依然指向字符串首地址
 		*ptr = 0;
 		for (i = 0; i < numentries; i++)
 		{
-			tmplen = strlen(entries[i]);
-			memcpy(ptr, entries[i], tmplen);
-			ptr += tmplen;
-			if (i != numentries - 1)
+			tmplen = strlen(entries[i]);	 // 记录每个字符串数组元素的长度
+			memcpy(ptr, entries[i], tmplen); // 将字符串数组元素复制到ptr
+			ptr += tmplen;					 // 更新ptr，跳过已复制元素的长度
+			if (i != numentries - 1)		 // 还有下一个元素，打印逗号
 			{
 				*ptr++ = ',';
-				if (fmt)
+				if (fmt) // 如果需要格式化，则加一个空格
 					*ptr++ = ' ';
 				*ptr = 0;
 			}
-			cJSON_free(entries[i]);
+			cJSON_free(entries[i]); // 复制完就可以释放内存
 		}
-		cJSON_free(entries);
-		*ptr++ = ']';
-		*ptr++ = 0;
+		cJSON_free(entries); // 释放字符串数组
+		*ptr++ = ']';		 // 右中括号
+		*ptr++ = 0;			 // 结束标记
 	}
 	return out;
 }
