@@ -673,11 +673,11 @@ static char *print_value(cJSON *item, int depth, int fmt, printbuffer *p) // mar
 		case cJSON_String: // 字符串类型
 			out = print_string(item, p);
 			break;
-		case cJSON_Array:
-			out = print_array(item, depth, fmt, p); // mark:4
+		case cJSON_Array: // 数组类型
+			out = print_array(item, depth, fmt, p);
 			break;
-		case cJSON_Object:
-			out = print_object(item, depth, fmt, p);
+		case cJSON_Object:							 // 对象类型
+			out = print_object(item, depth, fmt, p); // mark:4
 			break;
 		}
 	}
@@ -754,7 +754,7 @@ static const char *parse_array(cJSON *item, const char *value)
 }
 
 /* 将数组选染成文本 */
-static char *print_array(cJSON *item, int depth, int fmt, printbuffer *p) // mark:5
+static char *print_array(cJSON *item, int depth, int fmt, printbuffer *p)
 {
 	char **entries;						 // 用于存储每个数组元素的字符串数组
 	char *out = 0, *ptr, *ret;			 // out 用于存储输出字符串,ret用于暂存解析的数组元素，ptr用于遍历赋值
@@ -941,189 +941,193 @@ static const char *parse_object(cJSON *item, const char *value)
 	return 0; /* 格式错误，更新错误指针 */
 }
 
-/* Render an object to text. */
+/* 把对象渲染成字符串 */
 static char *print_object(cJSON *item, int depth, int fmt, printbuffer *p)
 {
-	char **entries = 0, **names = 0;
+	char **entries = 0, **names = 0; // 临时数组存储键名，值
 	char *out = 0, *ptr, *ret, *str;
-	int len = 7, i = 0, j;
-	cJSON *child = item->child;
-	int numentries = 0, fail = 0;
+	int len = 7, i = 0, j;		  // len临时记录所需长度，默认长度足够的较大值7
+	cJSON *child = item->child;	  // 指向对象第一个成员
+	int numentries = 0, fail = 0; // 记录对象成员个数，失败标记
 	size_t tmplen = 0;
-	/* Count the number of entries. */
+	/* 对象成员计数 */
 	while (child)
 		numentries++, child = child->next;
-	/* Explicitly handle empty object case */
-	if (!numentries)
+	/* 显式处理空对象的情况 */
+	if (!numentries) // 处理空对象
 	{
-		if (p)
-			out = ensure(p, fmt ? depth + 4 : 3);
-		else
-			out = (char *)cJSON_malloc(fmt ? depth + 4 : 3);
+		if (p)												 // 利用打印缓冲区
+			out = ensure(p, fmt ? depth + 4 : 3);			 // 根据是否格式化分配内存
+		else												 // 手动分配内存
+			out = (char *)cJSON_malloc(fmt ? depth + 4 : 3); // 非格式化左右大括号加结束标记，格式化多一个换行符加上每层多一个缩进符
 		if (!out)
-			return 0;
+			return 0; // 分配失败
 		ptr = out;
-		*ptr++ = '{';
-		if (fmt)
+		*ptr++ = '{'; // 左大括号
+		if (fmt)	  // 格式化
 		{
-			*ptr++ = '\n';
-			for (i = 0; i < depth - 1; i++)
+			*ptr++ = '\n';					// 换行
+			for (i = 0; i < depth - 1; i++) // 根据层数缩进，为了匹配左括号的位置
 				*ptr++ = '\t';
 		}
-		*ptr++ = '}';
-		*ptr++ = 0;
+		*ptr++ = '}'; // 右大括号
+		*ptr++ = 0;	  // 结束标记
 		return out;
 	}
-	if (p)
+	if (p) // 利用打印缓冲区处理非空对象
 	{
-		/* Compose the output: */
-		i = p->offset;
-		len = fmt ? 2 : 1;
-		ptr = ensure(p, len + 1);
+		i = p->offset;			  // 记录缓冲区偏移量
+		len = fmt ? 2 : 1;		  // 非格式化左大括号，格式化多一个换行符
+		ptr = ensure(p, len + 1); // ptr指向缓冲区，加上结束标记空间
 		if (!ptr)
-			return 0;
-		*ptr++ = '{';
+			return 0; // 分配失败
+		*ptr++ = '{'; // 左大括号
 		if (fmt)
-			*ptr++ = '\n';
-		*ptr = 0;
-		p->offset += len;
-		child = item->child;
-		depth++;
-		while (child)
+			*ptr++ = '\n';	 // 换行
+		*ptr = 0;			 // 结束标记
+		p->offset += len;	 // 更新缓冲区偏移量
+		child = item->child; // 指向对象第一个成员
+		depth++;			 // 层数加1
+		while (child)		 // 遍历当前层的成员
 		{
-			if (fmt)
+			if (fmt) // 格式化处理
 			{
-				ptr = ensure(p, depth);
+				ptr = ensure(p, depth); // 确保缩进符空间
 				if (!ptr)
-					return 0;
-				for (j = 0; j < depth; j++)
+					return 0;				// 分配失败
+				for (j = 0; j < depth; j++) // 根据层数缩进
 					*ptr++ = '\t';
-				p->offset += depth;
+				p->offset += depth; // 更新缓冲区偏移量
 			}
-			print_string_ptr(child->string, p);
-			p->offset = update(p);
+			print_string_ptr(child->string, p); // 渲染键名
+			p->offset = update(p);				// 更新缓冲区偏移量
 
-			len = fmt ? 2 : 1;
+			len = fmt ? 2 : 1; // 非格式化冒号，格式化多一个缩进符
 			ptr = ensure(p, len);
 			if (!ptr)
 				return 0;
-			*ptr++ = ':';
+			*ptr++ = ':'; // 冒号
 			if (fmt)
-				*ptr++ = '\t';
-			p->offset += len;
+				*ptr++ = '\t'; // 缩进
+			p->offset += len;  // 更新缓冲区偏移量
 
-			print_value(child, depth, fmt, p);
-			p->offset = update(p);
+			print_value(child, depth, fmt, p); // 渲染键值
+			p->offset = update(p);			   // 更新缓冲区偏移量
 
-			len = (fmt ? 1 : 0) + (child->next ? 1 : 0);
-			ptr = ensure(p, len + 1);
+			len = (fmt ? 1 : 0) + (child->next ? 1 : 0); // 有下一个成员加逗号，格式化多一个换行符
+			ptr = ensure(p, len + 1);					 // 确保缓存区空间
 			if (!ptr)
 				return 0;
 			if (child->next)
-				*ptr++ = ',';
+				*ptr++ = ','; // 逗号
 			if (fmt)
-				*ptr++ = '\n';
-			*ptr = 0;
-			p->offset += len;
-			child = child->next;
+				*ptr++ = '\n';	 // 换行
+			*ptr = 0;			 // 结束标记
+			p->offset += len;	 // 更新缓冲区偏移量
+			child = child->next; // 指向下一个成员
 		}
-		ptr = ensure(p, fmt ? (depth + 1) : 2);
+		ptr = ensure(p, fmt ? (depth + 1) : 2); // 非格式化右大括号加结束标记，格式化每层多一个缩进符
 		if (!ptr)
 			return 0;
 		if (fmt)
 			for (i = 0; i < depth - 1; i++)
-				*ptr++ = '\t';
-		*ptr++ = '}';
-		*ptr = 0;
-		out = (p->buffer) + i;
+				*ptr++ = '\t'; // 根据层数缩进
+		*ptr++ = '}';		   // 右大括号
+		*ptr = 0;			   // 结束标记
+		out = (p->buffer) + i; // 返回起始地址
 	}
-	else
+	else // 手动分配内存处理非空对象
 	{
-		/* Allocate space for the names and the objects */
-		entries = (char **)cJSON_malloc(numentries * sizeof(char *));
+		entries = (char **)cJSON_malloc(numentries * sizeof(char *)); // 为键名字符串数组分配空间
 		if (!entries)
 			return 0;
-		names = (char **)cJSON_malloc(numentries * sizeof(char *));
+		names = (char **)cJSON_malloc(numentries * sizeof(char *)); // 为键值字符串数组分配空间
 		if (!names)
 		{
-			cJSON_free(entries);
+			cJSON_free(entries); // 键值字符串数组分配失败，释放键名字符串数组
 			return 0;
 		}
+
+		// 初始化数组
 		memset(entries, 0, sizeof(char *) * numentries);
 		memset(names, 0, sizeof(char *) * numentries);
 
-		/* Collect all the results into our arrays: */
-		child = item->child;
-		depth++;
+		/* 将所有键值对存入数组 */
+		child = item->child; // 指向对象第一个成员
+		depth++;			 // 层数加1
 		if (fmt)
-			len += depth;
-		while (child)
+			len += depth; // 格式化每层多一个缩进符
+		while (child)	  // 遍历赋值键值对
 		{
 			names[i] = str = print_string_ptr(child->string, 0);
-			entries[i++] = ret = print_value(child, depth, fmt, 0);
+			entries[i++] = ret = print_value(child, depth, fmt, 0); // 当键名和键值都已经存储完毕后，i++ 才执行
 			if (str && ret)
-				len += strlen(ret) + strlen(str) + 2 + (fmt ? 2 + depth : 0);
+				len += strlen(ret) + strlen(str) + 2 + (fmt ? 2 + depth : 0); // 键名和键值长度+冒号与逗号+行前缩进，冒号前缩进与换行符
 			else
-				fail = 1;
+				fail = 1; // fail标记赋值失败
 			child = child->next;
 		}
 
-		/* Try to allocate the output string */
+		/* 为输出字符串分配空间 */
 		if (!fail)
 			out = (char *)cJSON_malloc(len);
 		if (!out)
 			fail = 1;
 
-		/* Handle failure */
+		/* 处理失败 */
 		if (fail)
 		{
-			for (i = 0; i < numentries; i++)
+			for (i = 0; i < numentries; i++) // 释放字符串
 			{
 				if (names[i])
 					cJSON_free(names[i]);
 				if (entries[i])
 					cJSON_free(entries[i]);
 			}
+			// 释放字符串数组
 			cJSON_free(names);
 			cJSON_free(entries);
 			return 0;
 		}
 
-		/* Compose the output: */
-		*out = '{';
+		/* 构造输出字符串 */
+		*out = '{'; // 左大括号
 		ptr = out + 1;
 		if (fmt)
-			*ptr++ = '\n';
-		*ptr = 0;
-		for (i = 0; i < numentries; i++)
+			*ptr++ = '\n';				 // 换行
+		*ptr = 0;						 // 结束标记
+		for (i = 0; i < numentries; i++) // 键值对
 		{
-			if (fmt)
+			if (fmt) // 对齐缩进
 				for (j = 0; j < depth; j++)
 					*ptr++ = '\t';
-			tmplen = strlen(names[i]);
-			memcpy(ptr, names[i], tmplen);
-			ptr += tmplen;
-			*ptr++ = ':';
-			if (fmt)
+			tmplen = strlen(names[i]);	   // 键名长度
+			memcpy(ptr, names[i], tmplen); // 拷贝键名
+			ptr += tmplen;				   // 指针后移
+			*ptr++ = ':';				   // 冒号
+			if (fmt)					   // 格式化缩进
 				*ptr++ = '\t';
-			strcpy(ptr, entries[i]);
-			ptr += strlen(entries[i]);
-			if (i != numentries - 1)
+			strcpy(ptr, entries[i]);   // 拷贝键值
+			ptr += strlen(entries[i]); // 指针后移
+			if (i != numentries - 1)   // 不是最后一个键值对，添加逗号
 				*ptr++ = ',';
-			if (fmt)
+			if (fmt) // 格式化换行
 				*ptr++ = '\n';
-			*ptr = 0;
+			*ptr = 0; // 结束标记
+			// 释放键名与键值字符串
 			cJSON_free(names[i]);
 			cJSON_free(entries[i]);
 		}
 
+		// 释放键名与键值字符串数组
 		cJSON_free(names);
 		cJSON_free(entries);
-		if (fmt)
+
+		if (fmt) // 对齐缩进
 			for (i = 0; i < depth - 1; i++)
 				*ptr++ = '\t';
-		*ptr++ = '}';
-		*ptr++ = 0;
+		*ptr++ = '}'; // 右大括号
+		*ptr++ = 0;	  // 结束标记
 	}
 	return out;
 }

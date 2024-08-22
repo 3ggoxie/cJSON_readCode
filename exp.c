@@ -39,11 +39,14 @@ int main(int argc, char const *argv[])
     //     printf("\\\"\n");
     // }
 
-    int start;
-    printf("请输入 1 到 5 之间的数字:");
-    scanf("%d", &start);
+    // int start;
+    // printf("请输入 1 到 5 之间的数字:");
+    // scanf("%d", &start);
 
-    printCountdown(start);
+    // printCountdown(start);
+
+    // 缩进验证
+    printf("123456\n\t123456\n123456\n");
 
     return 0;
 }
