@@ -581,7 +581,7 @@ cJSON *cJSON_ParseWithOpts(const char *value, const char **return_parse_end, int
 cJSON *cJSON_Parse(const char *value) { return cJSON_ParseWithOpts(value, 0, 0); }
 
 /* 将一个cJSON数据项（实体或结构）渲染成文本形式。 */
-char *cJSON_Print(cJSON *item) { return print_value(item, 0, 1, 0); } // 默认调用深度为0// mark:2
+char *cJSON_Print(cJSON *item) { return print_value(item, 0, 1, 0); } // 默认调用深度为0
 char *cJSON_PrintUnformatted(cJSON *item) { return print_value(item, 0, 0, 0); }
 
 char *cJSON_PrintBuffered(cJSON *item, int prebuffer, int fmt)
