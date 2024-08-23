@@ -638,7 +638,7 @@ static const char *parse_value(cJSON *item, const char *value)
 }
 
 /* 将值渲染成字符串。*/
-static char *print_value(cJSON *item, int depth, int fmt, printbuffer *p) // mark:3
+static char *print_value(cJSON *item, int depth, int fmt, printbuffer *p)
 {
 	char *out = 0; // 用于存储渲染后的字符串
 	if (!item)	   // 错误的cJSON对象
@@ -689,27 +689,27 @@ static char *print_value(cJSON *item, int depth, int fmt, printbuffer *p) // mar
 		case cJSON_NULL: // 空值类型
 			out = cJSON_strdup("null");
 			break;
-		case cJSON_False:
+		case cJSON_False: // false类型
 			out = cJSON_strdup("false");
 			break;
-		case cJSON_True:
+		case cJSON_True: // true类型
 			out = cJSON_strdup("true");
 			break;
-		case cJSON_Number:
-			out = print_number(item, 0);
+		case cJSON_Number:				 // 数字类型
+			out = print_number(item, 0); // 这里没有缓冲区，所以缓冲区指针参数传空指针。下同。
 			break;
-		case cJSON_String:
+		case cJSON_String: // 字符串类型
 			out = print_string(item, 0);
 			break;
-		case cJSON_Array:
+		case cJSON_Array: // 数组类型
 			out = print_array(item, depth, fmt, 0);
 			break;
-		case cJSON_Object:
+		case cJSON_Object: // 对象类型
 			out = print_object(item, depth, fmt, 0);
 			break;
 		}
 	}
-	return out;
+	return out; // 返回渲染后的字符串指针
 }
 
 /* 根据输入文本构建一个数组 */
