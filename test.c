@@ -16,10 +16,10 @@ void doit(char *text)
 	}
 	else // 解析成功，将JSON对象渲染为文本并存储在out变量中
 	{
-		out = cJSON_Print(json); // 将JSON对象渲染为文本// mark:1
+		out = cJSON_Print(json); // 将JSON对象渲染为文本
 		cJSON_Delete(json);		 // 释放JSON对象
-		printf("%s\n", out);
-		free(out); // 释放输出文本对象
+		printf("%s\n", out);	 // 打印解析后的JSON文本
+		free(out);				 // 释放输出文本对象
 	}
 }
 
