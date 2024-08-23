@@ -30,15 +30,16 @@ static int cJSON_strcasecmp(const char *s1, const char *s2)
 static void *(*cJSON_malloc)(size_t sz) = malloc;
 static void (*cJSON_free)(void *ptr) = free;
 
+/* 手动分配内存渲染字符串 */
 static char *cJSON_strdup(const char *str)
 {
-	size_t len;
-	char *copy;
+	size_t len; // 记录字符串长度
+	char *copy; // 存储复制后的字符串
 
-	len = strlen(str) + 1;
+	len = strlen(str) + 1; // 加上结束字符'\0'
 	if (!(copy = (char *)cJSON_malloc(len)))
-		return 0;
-	memcpy(copy, str, len);
+		return 0;			// 分配失败
+	memcpy(copy, str, len); // 复制字符串
 	return copy;
 }
 
@@ -676,16 +677,16 @@ static char *print_value(cJSON *item, int depth, int fmt, printbuffer *p) // mar
 		case cJSON_Array: // 数组类型
 			out = print_array(item, depth, fmt, p);
 			break;
-		case cJSON_Object:							 // 对象类型
-			out = print_object(item, depth, fmt, p); // mark:4
+		case cJSON_Object: // 对象类型
+			out = print_object(item, depth, fmt, p);
 			break;
 		}
 	}
-	else
+	else // 缓冲区为空
 	{
 		switch ((item->type) & 255)
 		{
-		case cJSON_NULL:
+		case cJSON_NULL: // 空值类型
 			out = cJSON_strdup("null");
 			break;
 		case cJSON_False:
