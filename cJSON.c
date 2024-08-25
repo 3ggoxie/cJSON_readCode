@@ -1357,7 +1357,7 @@ cJSON *cJSON_CreateObject(void)
 	cJSON *item = cJSON_New_Item(); // 创建一个新项
 	if (item)						// 如果创建成功
 		item->type = cJSON_Object;	// 设置类型为对象
-	return item;					// 返回新项
+	return item;					// 返回指针
 }
 
 /* Create Arrays: */
