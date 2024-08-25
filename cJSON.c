@@ -1334,13 +1334,14 @@ cJSON *cJSON_CreateNumber(double num)
 	}
 	return item;
 }
+/* cJSON创建字符串项 */
 cJSON *cJSON_CreateString(const char *string)
 {
-	cJSON *item = cJSON_New_Item();
-	if (item)
+	cJSON *item = cJSON_New_Item(); // 创建一个新项
+	if (item)						// 如果创建成功
 	{
-		item->type = cJSON_String;
-		item->valuestring = cJSON_strdup(string);
+		item->type = cJSON_String;				  // 设置类型为字符串
+		item->valuestring = cJSON_strdup(string); // 字符串项赋值
 	}
 	return item;
 }
