@@ -26,19 +26,19 @@ void doit(char *text)
 /* 读取文件，解析内容，然后重新渲染等操作。*/
 void dofile(char *filename)
 {
-	FILE *f;
-	long len;
-	char *data;
+	FILE *f;	// 文件指针
+	long len;	// 文件长度
+	char *data; // 用于存储文本
 
-	f = fopen(filename, "rb");
-	fseek(f, 0, SEEK_END);
-	len = ftell(f);
-	fseek(f, 0, SEEK_SET);
-	data = (char *)malloc(len + 1);
-	fread(data, 1, len, f);
-	fclose(f);
-	doit(data);
-	free(data);
+	f = fopen(filename, "rb");		// 以都二进制的方式打开文件
+	fseek(f, 0, SEEK_END);			// 文件指示器指向离文件末尾偏移0的位置（也就是末尾）
+	len = ftell(f);					// 获取文件指示器的当前位置，即文件长度
+	fseek(f, 0, SEEK_SET);			// 将文件指示器指向文件开头
+	data = (char *)malloc(len + 1); // 分配内存，注意加上一个字节，用于存储字符串结尾的'\0'字符
+	fread(data, 1, len, f);			// 将文件内容读入到data中
+	fclose(f);						// 关闭文件流并释放相关资源
+	doit(data);						// 解析重构并打印data
+	free(data);						// 释放data内存
 }
 
 /* 被下方的一些代码用作示例数据类型。*/
@@ -154,21 +154,21 @@ int main(int argc, const char *argv[])
 	char text5[] = "[\n	 {\n	 \"precision\": \"zip\",\n	 \"Latitude\":  37.7668,\n	 \"Longitude\": -122.3959,\n	 \"Address\":   \"\",\n	 \"City\":      \"SAN FRANCISCO\",\n	 \"State\":     \"CA\",\n	 \"Zip\":       \"94107\",\n	 \"Country\":   \"US\"\n	 },\n	 {\n	 \"precision\": \"zip\",\n	 \"Latitude\":  37.371991,\n	 \"Longitude\": -122.026020,\n	 \"Address\":   \"\",\n	 \"City\":      \"SUNNYVALE\",\n	 \"State\":     \"CA\",\n	 \"Zip\":       \"94085\",\n	 \"Country\":   \"US\"\n	 }\n	 ]";
 
 	/* 对于每个 JSON 文本块，先进行解析，然后再将其重新构建: */
-	doit(text1); // mark:0
-	doit(text2);
+	doit(text1); // 解析重构并打印text1
+	/* doit(text2);
 	doit(text3);
 	doit(text4);
-	doit(text5);
+	doit(text5); */
 
 	/* 解析标准测试文件：*/
-	/*	dofile("../../tests/test1"); */
-	/*	dofile("../../tests/test2"); */
-	/*	dofile("../../tests/test3"); */
-	/*	dofile("../../tests/test4"); */
-	/*	dofile("../../tests/test5"); */
+	dofile("../../tests/test1");
+	/* dofile("../../tests/test2");
+	dofile("../../tests/test3");
+	dofile("../../tests/test4");
+	dofile("../../tests/test5"); */
 
 	/* 一些用于简洁地构建对象的示例代码：*/
-	create_objects();
+	create_objects(); // mark:0
 
 	return 0;
 }
