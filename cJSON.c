@@ -1351,7 +1351,7 @@ cJSON *cJSON_CreateArray(void)
 		item->type = cJSON_Array;
 	return item;
 }
-/* 构建cJSON对象 */
+/* 构建cJSON对象新节点 */
 cJSON *cJSON_CreateObject(void)
 {
 	cJSON *item = cJSON_New_Item(); // 创建一个新项
