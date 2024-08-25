@@ -1351,12 +1351,13 @@ cJSON *cJSON_CreateArray(void)
 		item->type = cJSON_Array;
 	return item;
 }
+/* 构建cJSON对象 */
 cJSON *cJSON_CreateObject(void)
 {
-	cJSON *item = cJSON_New_Item();
-	if (item)
-		item->type = cJSON_Object;
-	return item;
+	cJSON *item = cJSON_New_Item(); // 创建一个新项
+	if (item)						// 如果创建成功
+		item->type = cJSON_Object;	// 设置类型为对象
+	return item;					// 返回新项
 }
 
 /* Create Arrays: */
