@@ -1193,12 +1193,12 @@ void cJSON_AddItemToArray(cJSON *array, cJSON *item)
 		suffix_object(c, item); // 将item链接到c之后
 	}
 }
-/* 向对象内添加新项（只添加键名） */
+/* 通过改造已有cJSON类型的方式向对象内添加新项 */
 void cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item)
 {
 	if (!item)
 		return;		  // item为空则直接返回结束执行
-	if (item->string) // item的string不为空，则释放item的string
+	if (item->string) // item的键名不为空，则释放item的string
 		cJSON_free(item->string);
 	item->string = cJSON_strdup(string); // 修改键名
 	cJSON_AddItemToArray(object, item);	 // 把item添加到object
