@@ -1157,11 +1157,11 @@ cJSON *cJSON_GetObjectItem(cJSON *object, const char *string)
 	return c;
 }
 
-/* Utility for array list handling. */
-static void suffix_object(cJSON *prev, cJSON *item)
+/* 链表尾插工具 */
+static void suffix_object(cJSON *prev, cJSON *item) // mark:6
 {
-	prev->next = item;
-	item->prev = prev;
+	prev->next = item; // 将item链接到prev之后
+	item->prev = prev; // 将prev链接到item之前
 }
 /* Utility for handling references. */
 static cJSON *create_reference(cJSON *item)
@@ -1176,31 +1176,32 @@ static cJSON *create_reference(cJSON *item)
 	return ref;
 }
 
-/* Add item to array/object. */
-void cJSON_AddItemToArray(cJSON *array, cJSON *item)
+/* 添加项到数组/对象 */
+void cJSON_AddItemToArray(cJSON *array, cJSON *item) // mark:4
 {
-	cJSON *c = array->child;
-	if (!item)
+	cJSON *c = array->child; // 指向第一个成员
+	if (!item)				 // item为空则直接返回结束执行
 		return;
-	if (!c)
+	if (!c) // 这是第一个成员
 	{
-		array->child = item;
+		array->child = item; // 连入item
 	}
-	else
+	else // 不是第一个成员
 	{
-		while (c && c->next)
+		while (c && c->next) // 遍历到最后一个成员
 			c = c->next;
-		suffix_object(c, item);
+		suffix_object(c, item); // mark:5
 	}
 }
-void cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item)
+/* 向对象内添加新项 */
+void cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item) // mark:3
 {
 	if (!item)
-		return;
-	if (item->string)
+		return;		  // item为空则直接返回结束执行
+	if (item->string) // item的string不为空，则释放item的string
 		cJSON_free(item->string);
-	item->string = cJSON_strdup(string);
-	cJSON_AddItemToArray(object, item);
+	item->string = cJSON_strdup(string); // item的string赋值
+	cJSON_AddItemToArray(object, item);	 // mark:4
 }
 void cJSON_AddItemToObjectCS(cJSON *object, const char *string, cJSON *item)
 {
