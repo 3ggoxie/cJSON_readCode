@@ -1158,7 +1158,7 @@ cJSON *cJSON_GetObjectItem(cJSON *object, const char *string)
 }
 
 /* 链表尾插工具 */
-static void suffix_object(cJSON *prev, cJSON *item) // mark:6
+static void suffix_object(cJSON *prev, cJSON *item)
 {
 	prev->next = item; // 将item链接到prev之后
 	item->prev = prev; // 将prev链接到item之前
@@ -1177,7 +1177,7 @@ static cJSON *create_reference(cJSON *item)
 }
 
 /* 添加项到数组/对象 */
-void cJSON_AddItemToArray(cJSON *array, cJSON *item) // mark:4
+void cJSON_AddItemToArray(cJSON *array, cJSON *item)
 {
 	cJSON *c = array->child; // 指向第一个成员
 	if (!item)				 // item为空则直接返回结束执行
@@ -1190,7 +1190,7 @@ void cJSON_AddItemToArray(cJSON *array, cJSON *item) // mark:4
 	{
 		while (c && c->next) // 遍历到最后一个成员
 			c = c->next;
-		suffix_object(c, item); // mark:5
+		suffix_object(c, item); // 将item链接到c之后
 	}
 }
 /* 向对象内添加新项 */
