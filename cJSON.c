@@ -1194,14 +1194,14 @@ void cJSON_AddItemToArray(cJSON *array, cJSON *item)
 	}
 }
 /* 向对象内添加新项 */
-void cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item) // mark:3
+void cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item)
 {
 	if (!item)
 		return;		  // item为空则直接返回结束执行
 	if (item->string) // item的string不为空，则释放item的string
 		cJSON_free(item->string);
 	item->string = cJSON_strdup(string); // item的string赋值
-	cJSON_AddItemToArray(object, item);	 // mark:4
+	cJSON_AddItemToArray(object, item);	 // 把item添加到object
 }
 void cJSON_AddItemToObjectCS(cJSON *object, const char *string, cJSON *item)
 {
