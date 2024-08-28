@@ -1295,7 +1295,7 @@ void cJSON_ReplaceItemInObject(cJSON *object, const char *string, cJSON *newitem
 	}
 }
 
-/* Create basic types: */
+/* 创建基础类型 */
 cJSON *cJSON_CreateNull(void)
 {
 	cJSON *item = cJSON_New_Item();
@@ -1324,18 +1324,19 @@ cJSON *cJSON_CreateBool(int b)
 		item->type = b ? cJSON_True : cJSON_False;
 	return item;
 }
+/* cJSON创建数字 */
 cJSON *cJSON_CreateNumber(double num)
 {
-	cJSON *item = cJSON_New_Item();
-	if (item)
+	cJSON *item = cJSON_New_Item(); // 创建一个新项
+	if (item)						// 如果创建成功
 	{
-		item->type = cJSON_Number;
-		item->valuedouble = num;
-		item->valueint = (int)num;
+		item->type = cJSON_Number; // 设置类型为数字
+		item->valuedouble = num;   // 数字精确赋值
+		item->valueint = (int)num; // 数字整数赋值
 	}
 	return item;
 }
-/* cJSON创建字符串项 */
+/* cJSON创建字符串 */
 cJSON *cJSON_CreateString(const char *string)
 {
 	cJSON *item = cJSON_New_Item(); // 创建一个新项
