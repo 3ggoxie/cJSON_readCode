@@ -1409,15 +1409,15 @@ cJSON *cJSON_CreateDoubleArray(const double *numbers, int count)
 cJSON *cJSON_CreateStringArray(const char **strings, int count) // 构建cJSON字符串数组
 {
 	int i;											// 遍历索引
-	cJSON *n = 0, *p = 0, *a = cJSON_CreateArray(); // 创建数组根节点a,遍历指针p//mark:3
+	cJSON *n = 0, *p = 0, *a = cJSON_CreateArray(); // 创建数组根节点a，遍历指针p，临时存放新建节点指针n
 	for (i = 0; a && i < count; i++)
 	{
-		n = cJSON_CreateString(strings[i]);
-		if (!i)
-			a->child = n;
-		else
-			suffix_object(p, n);
-		p = n;
+		n = cJSON_CreateString(strings[i]); // 创建字符串节点
+		if (!i)								// 是第一个元素
+			a->child = n;					// 连入第一个元素
+		else								// 不是第一个元素
+			suffix_object(p, n);			// 连接元素
+		p = n;								// 遍历指针指向下一个元素
 	}
 	return a;
 }
