@@ -1310,11 +1310,12 @@ cJSON *cJSON_CreateTrue(void)
 		item->type = cJSON_True;
 	return item;
 }
+/* cJSON创建false */
 cJSON *cJSON_CreateFalse(void)
 {
-	cJSON *item = cJSON_New_Item();
-	if (item)
-		item->type = cJSON_False;
+	cJSON *item = cJSON_New_Item(); // 创建一个新项
+	if (item)						// 如果创建成功
+		item->type = cJSON_False;	// 设置为cJSON_False类型
 	return item;
 }
 cJSON *cJSON_CreateBool(int b)
