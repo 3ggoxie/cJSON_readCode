@@ -1310,8 +1310,7 @@ cJSON *cJSON_CreateTrue(void)
 		item->type = cJSON_True;
 	return item;
 }
-/* cJSON创建false */
-cJSON *cJSON_CreateFalse(void)
+cJSON *cJSON_CreateFalse(void) // cJSON创建false
 {
 	cJSON *item = cJSON_New_Item(); // 创建一个新项
 	if (item)						// 如果创建成功
@@ -1325,8 +1324,7 @@ cJSON *cJSON_CreateBool(int b)
 		item->type = b ? cJSON_True : cJSON_False;
 	return item;
 }
-/* cJSON创建数字 */
-cJSON *cJSON_CreateNumber(double num)
+cJSON *cJSON_CreateNumber(double num) // cJSON创建数字
 {
 	cJSON *item = cJSON_New_Item(); // 创建一个新项
 	if (item)						// 如果创建成功
@@ -1337,8 +1335,7 @@ cJSON *cJSON_CreateNumber(double num)
 	}
 	return item;
 }
-/* cJSON创建字符串 */
-cJSON *cJSON_CreateString(const char *string)
+cJSON *cJSON_CreateString(const char *string) // cJSON创建字符串
 {
 	cJSON *item = cJSON_New_Item(); // 创建一个新项
 	if (item)						// 如果创建成功
@@ -1348,15 +1345,14 @@ cJSON *cJSON_CreateString(const char *string)
 	}
 	return item;
 }
-cJSON *cJSON_CreateArray(void)
+cJSON *cJSON_CreateArray(void) // cJSON创建数组
 {
-	cJSON *item = cJSON_New_Item();
-	if (item)
-		item->type = cJSON_Array;
+	cJSON *item = cJSON_New_Item(); // 创建一个新项
+	if (item)						// 如果创建成功
+		item->type = cJSON_Array;	// 设置类型为数组
 	return item;
 }
-/* 构建cJSON对象新节点 */
-cJSON *cJSON_CreateObject(void)
+cJSON *cJSON_CreateObject(void) // 构建cJSON对象
 {
 	cJSON *item = cJSON_New_Item(); // 创建一个新项
 	if (item)						// 如果创建成功
@@ -1364,7 +1360,7 @@ cJSON *cJSON_CreateObject(void)
 	return item;					// 返回指针
 }
 
-/* Create Arrays: */
+/* 创建数组: */
 cJSON *cJSON_CreateIntArray(const int *numbers, int count)
 {
 	int i;
@@ -1410,10 +1406,10 @@ cJSON *cJSON_CreateDoubleArray(const double *numbers, int count)
 	}
 	return a;
 }
-cJSON *cJSON_CreateStringArray(const char **strings, int count)
+cJSON *cJSON_CreateStringArray(const char **strings, int count) // 构建cJSON字符串数组
 {
-	int i;
-	cJSON *n = 0, *p = 0, *a = cJSON_CreateArray();
+	int i;											// 遍历索引
+	cJSON *n = 0, *p = 0, *a = cJSON_CreateArray(); // 创建数组根节点a,遍历指针p//mark:3
 	for (i = 0; a && i < count; i++)
 	{
 		n = cJSON_CreateString(strings[i]);
