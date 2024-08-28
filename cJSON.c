@@ -1361,18 +1361,18 @@ cJSON *cJSON_CreateObject(void) // 构建cJSON对象
 }
 
 /* 创建数组: */
-cJSON *cJSON_CreateIntArray(const int *numbers, int count)
+cJSON *cJSON_CreateIntArray(const int *numbers, int count) // 构建cJSON整型数组
 {
-	int i;
-	cJSON *n = 0, *p = 0, *a = cJSON_CreateArray();
+	int i;											// 遍历索引
+	cJSON *n = 0, *p = 0, *a = cJSON_CreateArray(); // 创建数组根节点a，遍历指针p，临时存放新建节点指针n
 	for (i = 0; a && i < count; i++)
 	{
-		n = cJSON_CreateNumber(numbers[i]);
-		if (!i)
-			a->child = n;
-		else
-			suffix_object(p, n);
-		p = n;
+		n = cJSON_CreateNumber(numbers[i]); // 创建数字节点
+		if (!i)								// 第一个元素
+			a->child = n;					// 插入到数组
+		else								// 非第一个元素
+			suffix_object(p, n);			// 插入元素
+		p = n;								// 更新遍历指针
 	}
 	return a;
 }
