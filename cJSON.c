@@ -1317,11 +1317,11 @@ cJSON *cJSON_CreateFalse(void) // cJSON创建false
 		item->type = cJSON_False;	// 设置为cJSON_False类型
 	return item;
 }
-cJSON *cJSON_CreateBool(int b)
+cJSON *cJSON_CreateBool(int b) // cJSON创建bool
 {
-	cJSON *item = cJSON_New_Item();
-	if (item)
-		item->type = b ? cJSON_True : cJSON_False;
+	cJSON *item = cJSON_New_Item();				   // 创建一个新项
+	if (item)									   // 如果创建成功
+		item->type = b ? cJSON_True : cJSON_False; // 根据bool值设置类型
 	return item;
 }
 cJSON *cJSON_CreateNumber(double num) // cJSON创建数字
