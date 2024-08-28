@@ -1245,7 +1245,7 @@ cJSON *cJSON_DetachItemFromObject(cJSON *object, const char *string)
 }
 void cJSON_DeleteItemFromObject(cJSON *object, const char *string) { cJSON_Delete(cJSON_DetachItemFromObject(object, string)); }
 
-/* Replace array/object items with new ones. */
+/* 用新项替换数组/对象里的旧项 */
 void cJSON_InsertItemInArray(cJSON *array, int which, cJSON *newitem)
 {
 	cJSON *c = array->child;
@@ -1264,23 +1264,23 @@ void cJSON_InsertItemInArray(cJSON *array, int which, cJSON *newitem)
 	else
 		newitem->prev->next = newitem;
 }
-void cJSON_ReplaceItemInArray(cJSON *array, int which, cJSON *newitem)
+void cJSON_ReplaceItemInArray(cJSON *array, int which, cJSON *newitem) // 替换数组元素
 {
-	cJSON *c = array->child;
-	while (c && which > 0)
+	cJSON *c = array->child; // 指向首元素
+	while (c && which > 0)	 // 遍历到指定位置，对应数组下标[which]的元素
 		c = c->next, which--;
-	if (!c)
+	if (!c) // which越界，则直接返回结束执行
 		return;
-	newitem->next = c->next;
-	newitem->prev = c->prev;
-	if (newitem->next)
-		newitem->next->prev = newitem;
-	if (c == array->child)
-		array->child = newitem;
-	else
-		newitem->prev->next = newitem;
-	c->next = c->prev = 0;
-	cJSON_Delete(c);
+	newitem->next = c->next;		   // 连接后继
+	newitem->prev = c->prev;		   // 连接前驱
+	if (newitem->next)				   // 不是最后一个元素
+		newitem->next->prev = newitem; // 后继元素的前驱指向新元素
+	if (c == array->child)			   // 是第一个元素
+		array->child = newitem;		   // array->child指向新首元素
+	else							   // 不是第一个元素
+		newitem->prev->next = newitem; // 前驱元素的后继指向新元素
+	c->next = c->prev = 0;			   // 断开旧元素
+	cJSON_Delete(c);				   // 释放旧元素
 }
 void cJSON_ReplaceItemInObject(cJSON *object, const char *string, cJSON *newitem)
 {
