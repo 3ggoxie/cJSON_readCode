@@ -1296,11 +1296,11 @@ void cJSON_ReplaceItemInObject(cJSON *object, const char *string, cJSON *newitem
 }
 
 /* 创建基础类型 */
-cJSON *cJSON_CreateNull(void)
+cJSON *cJSON_CreateNull(void) // cJSON创建null
 {
-	cJSON *item = cJSON_New_Item();
-	if (item)
-		item->type = cJSON_NULL;
+	cJSON *item = cJSON_New_Item(); // 创建一个新项
+	if (item)						// 如果创建成功
+		item->type = cJSON_NULL;	// 设置为cJSON_NULL类型
 	return item;
 }
 cJSON *cJSON_CreateTrue(void) // cJSON创建true
