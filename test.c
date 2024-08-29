@@ -44,83 +44,82 @@ void dofile(char *filename)
 /* 被下方的一些代码用作示例数据类型。*/
 struct record
 {
-	const char *precision;
-	double lat, lon;
-	const char *address, *city, *state, *zip, *country;
+	const char *precision;								// 表示精度的字符串，明确地址的范围，如下面的“zip”代表以邮政编码为范围的区域
+	double lat, lon;									// 经纬度
+	const char *address, *city, *state, *zip, *country; // 地址，城市，州，邮编，国家
 };
 
-/* Create a bunch of objects as demonstration. */
-void create_objects()
+/* 创建一些对象用于演示 */
+void create_objects() // mark:1
 {
 	cJSON *root, *fmt, *img, *thm, *fld;
 	char *out;
 	int i; /* declare a few. */
-	/* Our "days of the week" array: */
+	/* 一周七天的字符串数组: */
 	const char *strings[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-	/* Our matrix: */
+	/* 一个3x3矩阵: */
 	int numbers[3][3] = {{0, -1, 0}, {1, 0, 0}, {0, 0, 1}};
-	/* Our "gallery" item: */
+	/* 图片展示组件: */
 	int ids[4] = {116, 943, 234, 38793};
-	/* Our array of "records": */
+	/* records数组: */
 	struct record fields[2] = {
 		{"zip", 37.7668, -1.223959e+2, "", "SAN FRANCISCO", "CA", "94107", "US"},
 		{"zip", 37.371991, -1.22026e+2, "", "SUNNYVALE", "CA", "94085", "US"}};
 
-	/* Here we construct some JSON standards, from the JSON site. */
+	/* 在这里我们构建一些来自 JSON 网站的标准 JSON 示例。 */
 
-	/* Our "Video" datatype: */
-	root = cJSON_CreateObject();
-	cJSON_AddItemToObject(root, "name", cJSON_CreateString("Jack (\"Bee\") Nimble"));
-	cJSON_AddItemToObject(root, "format", fmt = cJSON_CreateObject());
-	cJSON_AddStringToObject(fmt, "type", "rect");
-	cJSON_AddNumberToObject(fmt, "width", 1920);
-	cJSON_AddNumberToObject(fmt, "height", 1080);
-	cJSON_AddFalseToObject(fmt, "interlace");
-	cJSON_AddNumberToObject(fmt, "frame rate", 24);
+	/* 视频数据类型: */
+	root = cJSON_CreateObject();													  // 创建新对象的根节点
+	cJSON_AddItemToObject(root, "name", cJSON_CreateString("Jack (\"Bee\") Nimble")); // 改造一个cJSON字符串的方式添加第一个成员
+	cJSON_AddItemToObject(root, "format", fmt = cJSON_CreateObject());				  // 添加值为对象类型的新项
+	cJSON_AddStringToObject(fmt, "type", "rect");									  // 添加一个字符串类型的新项
+	cJSON_AddNumberToObject(fmt, "width", 1920);									  // 添加一个数字类型的新项
+	cJSON_AddNumberToObject(fmt, "height", 1080);									  // 添加一个数字类型的新项
+	cJSON_AddFalseToObject(fmt, "interlace");										  // 添加一个布尔类型的新项
+	cJSON_AddNumberToObject(fmt, "frame rate", 24);									  // 添加一个数字类型的新项
 
-	out = cJSON_Print(root);
-	cJSON_Delete(root);
-	printf("%s\n", out);
-	free(out); /* Print to text, Delete the cJSON, print it, release the string. */
+	out = cJSON_Print(root); // 接取渲染后的文本
+	cJSON_Delete(root);		 // 删除对象
+	printf("%s\n", out);	 // 打印文本
+	free(out);				 /* 渲染成文本, 删除cJSON对象, 打印它, 释放字符串内存 */
 
-	/* Our "days of the week" array: */
-	root = cJSON_CreateStringArray(strings, 7);
+	/* 构建一周七天的字符串数组 */
+	root = cJSON_CreateStringArray(strings, 7); // 根据字符串数组创建一个cJSON字符串数组
+	/* cJSON_ReplaceItemInArray(root, 1, cJSON_CreateString("Replacement")); // 将数组root的第2个元素替换为字符串"Replacement" */
 
-	out = cJSON_Print(root);
-	cJSON_Delete(root);
-	printf("%s\n", out);
-	free(out);
+	out = cJSON_Print(root); // 接取渲染后的文本
+	cJSON_Delete(root);		 // 删除数组
+	printf("%s\n", out);	 // 打印文本
+	free(out);				 // 释放文本内存
 
-	/* Our matrix: */
-	root = cJSON_CreateArray();
-	for (i = 0; i < 3; i++)
-		cJSON_AddItemToArray(root, cJSON_CreateIntArray(numbers[i], 3));
+	/* 构建一个3x3矩阵 */
+	root = cJSON_CreateArray();											 // 构建矩阵根节点
+	for (i = 0; i < 3; i++)												 // 遍历构建行数组
+		cJSON_AddItemToArray(root, cJSON_CreateIntArray(numbers[i], 3)); // 通过cJSON_AddItemToArray将行数组拼成矩阵
 
-	/*	cJSON_ReplaceItemInArray(root,1,cJSON_CreateString("Replacement")); */
+	out = cJSON_Print(root); // 接取渲染后的文本
+	cJSON_Delete(root);		 // 删除矩阵
+	printf("%s\n", out);	 // 打印文本
+	free(out);				 // 释放文本内存
 
-	out = cJSON_Print(root);
-	cJSON_Delete(root);
-	printf("%s\n", out);
-	free(out);
+	/* 构建图片展示组件 */
+	root = cJSON_CreateObject();												   // 创建图片展示组件根节点
+	cJSON_AddItemToObject(root, "Image", img = cJSON_CreateObject());			   // 添加值为对象类型的新项Image
+	cJSON_AddNumberToObject(img, "Width", 800);									   // 添加对象Image的第一个值为数字类型的新项Width
+	cJSON_AddNumberToObject(img, "Height", 600);								   // 数字类型的新项Height
+	cJSON_AddStringToObject(img, "Title", "View from 15th Floor");				   // 字符串类型的新项Title
+	cJSON_AddItemToObject(img, "Thumbnail", thm = cJSON_CreateObject());		   // 添加值值为对象类型的新项Thumbnail
+	cJSON_AddStringToObject(thm, "Url", "http:/*www.example.com/image/481989943"); // 添加对象Thumbnail的第一个值为字符串类型的新项Url
+	cJSON_AddNumberToObject(thm, "Height", 125);								   // 数字类型的新项Height
+	cJSON_AddStringToObject(thm, "Width", "100");								   // 字符串类型的新项Width
+	cJSON_AddItemToObject(img, "IDs", cJSON_CreateIntArray(ids, 4));			   // 数组类型的新项IDs
 
-	/* Our "gallery" item: */
-	root = cJSON_CreateObject();
-	cJSON_AddItemToObject(root, "Image", img = cJSON_CreateObject());
-	cJSON_AddNumberToObject(img, "Width", 800);
-	cJSON_AddNumberToObject(img, "Height", 600);
-	cJSON_AddStringToObject(img, "Title", "View from 15th Floor");
-	cJSON_AddItemToObject(img, "Thumbnail", thm = cJSON_CreateObject());
-	cJSON_AddStringToObject(thm, "Url", "http:/*www.example.com/image/481989943");
-	cJSON_AddNumberToObject(thm, "Height", 125);
-	cJSON_AddStringToObject(thm, "Width", "100");
-	cJSON_AddItemToObject(img, "IDs", cJSON_CreateIntArray(ids, 4));
+	out = cJSON_Print(root); // 接收渲染后的文本
+	cJSON_Delete(root);		 // 删除图片展示组件
+	printf("%s\n", out);	 // 打印文本
+	free(out);				 // 释放文本内存
 
-	out = cJSON_Print(root);
-	cJSON_Delete(root);
-	printf("%s\n", out);
-	free(out);
-
-	/* Our array of "records": */
+	/* Our array of "records": */ // mark:2
 
 	root = cJSON_CreateArray();
 	for (i = 0; i < 2; i++)
@@ -161,7 +160,7 @@ int main(int argc, const char *argv[])
 	doit(text5); */
 
 	/* 解析标准测试文件：*/
-	dofile("../../tests/test1");
+	dofile("../../tests/test1"); // 解析重构文件并打印
 	/* dofile("../../tests/test2");
 	dofile("../../tests/test3");
 	dofile("../../tests/test4");
