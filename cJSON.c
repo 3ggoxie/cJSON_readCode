@@ -1133,7 +1133,7 @@ static char *print_object(cJSON *item, int depth, int fmt, printbuffer *p)
 	return out;
 }
 
-/* Get Array size/item / object item. */
+/* 获取数组大小 */
 int cJSON_GetArraySize(cJSON *array)
 {
 	cJSON *c = array->child;
@@ -1142,12 +1142,13 @@ int cJSON_GetArraySize(cJSON *array)
 		i++, c = c->next;
 	return i;
 }
+/* 获取数组第item个成员 */
 cJSON *cJSON_GetArrayItem(cJSON *array, int item)
 {
-	cJSON *c = array->child;
-	while (c && item > 0)
+	cJSON *c = array->child; // 指向第一个成员
+	while (c && item > 0)	 // 遍历
 		item--, c = c->next;
-	return c;
+	return c; // 返回第item个成员的指针
 }
 cJSON *cJSON_GetObjectItem(cJSON *object, const char *string)
 {
