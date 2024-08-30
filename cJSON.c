@@ -1286,14 +1286,14 @@ void cJSON_ReplaceItemInArray(cJSON *array, int which, cJSON *newitem) // 替换
 }
 void cJSON_ReplaceItemInObject(cJSON *object, const char *string, cJSON *newitem) // 替换对象元素
 {
-	int i = 0;
+	int i = 0;										 // 记录键名在object中的位置
 	cJSON *c = object->child;						 // 指向首元素
-	while (c && cJSON_strcasecmp(c->string, string)) // mark:3
+	while (c && cJSON_strcasecmp(c->string, string)) // 键名不匹配，则继续遍历
 		i++, c = c->next;
-	if (c)
+	if (c) // 非空说明还没找完，存在匹配的键值对
 	{
-		newitem->string = cJSON_strdup(string);
-		cJSON_ReplaceItemInArray(object, i, newitem);
+		newitem->string = cJSON_strdup(string);		  // 新项赋值键名
+		cJSON_ReplaceItemInArray(object, i, newitem); // 借用数组替换的方法新项替换旧项
 	}
 }
 
