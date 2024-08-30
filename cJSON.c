@@ -1,5 +1,5 @@
 /* cJSON */
-/* JSON parser in C. */
+/* JSON parser in C. */ // mark:0
 
 #include <string.h>
 #include <stdio.h>
@@ -44,7 +44,7 @@ static char *cJSON_strdup(const char *str)
 	return copy;
 }
 
-void cJSON_InitHooks(cJSON_Hooks *hooks)
+void cJSON_InitHooks(cJSON_Hooks *hooks) // mark:1
 {
 	if (!hooks)
 	{ /* Reset hooks */
@@ -526,7 +526,7 @@ static char *print_string_ptr(const char *str, printbuffer *p)
 /* 对一个项调用print_string_ptr (which is useful) */
 static char *print_string(cJSON *item, printbuffer *p) { return print_string_ptr(item->valuestring, p); }
 
-/* Predeclare these prototypes. */
+/* Predeclare these prototypes. */ // mark:2
 static const char *parse_value(cJSON *item, const char *value);
 static char *print_value(cJSON *item, int depth, int fmt, printbuffer *p);
 static const char *parse_array(cJSON *item, const char *value);
@@ -582,10 +582,10 @@ cJSON *cJSON_ParseWithOpts(const char *value, const char **return_parse_end, int
 cJSON *cJSON_Parse(const char *value) { return cJSON_ParseWithOpts(value, 0, 0); }
 
 /* 将一个cJSON数据项（实体或结构）渲染成文本形式。 */
-char *cJSON_Print(cJSON *item) { return print_value(item, 0, 1, 0); } // 默认调用深度为0
-char *cJSON_PrintUnformatted(cJSON *item) { return print_value(item, 0, 0, 0); }
+char *cJSON_Print(cJSON *item) { return print_value(item, 0, 1, 0); }			 // 默认调用深度为0
+char *cJSON_PrintUnformatted(cJSON *item) { return print_value(item, 0, 0, 0); } // mark:3
 
-char *cJSON_PrintBuffered(cJSON *item, int prebuffer, int fmt)
+char *cJSON_PrintBuffered(cJSON *item, int prebuffer, int fmt) // mark:4
 {
 	printbuffer p;
 	p.buffer = (char *)cJSON_malloc(prebuffer);
@@ -1165,7 +1165,7 @@ static void suffix_object(cJSON *prev, cJSON *item)
 	prev->next = item; // 将item链接到prev之后
 	item->prev = prev; // 将prev链接到item之前
 }
-/* Utility for handling references. */
+/* Utility for handling references. */ // mark:5
 static cJSON *create_reference(cJSON *item)
 {
 	cJSON *ref = cJSON_New_Item();
@@ -1205,7 +1205,7 @@ void cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item)
 	item->string = cJSON_strdup(string); // 修改键名
 	cJSON_AddItemToArray(object, item);	 // 把item添加到object
 }
-void cJSON_AddItemToObjectCS(cJSON *object, const char *string, cJSON *item)
+void cJSON_AddItemToObjectCS(cJSON *object, const char *string, cJSON *item) // mark:6
 {
 	if (!item)
 		return;
@@ -1215,10 +1215,10 @@ void cJSON_AddItemToObjectCS(cJSON *object, const char *string, cJSON *item)
 	item->type |= cJSON_StringIsConst;
 	cJSON_AddItemToArray(object, item);
 }
-void cJSON_AddItemReferenceToArray(cJSON *array, cJSON *item) { cJSON_AddItemToArray(array, create_reference(item)); }
-void cJSON_AddItemReferenceToObject(cJSON *object, const char *string, cJSON *item) { cJSON_AddItemToObject(object, string, create_reference(item)); }
+void cJSON_AddItemReferenceToArray(cJSON *array, cJSON *item) { cJSON_AddItemToArray(array, create_reference(item)); }								   // mark:7
+void cJSON_AddItemReferenceToObject(cJSON *object, const char *string, cJSON *item) { cJSON_AddItemToObject(object, string, create_reference(item)); } // mark:8
 
-cJSON *cJSON_DetachItemFromArray(cJSON *array, int which)
+cJSON *cJSON_DetachItemFromArray(cJSON *array, int which) // mark:9
 {
 	cJSON *c = array->child;
 	while (c && which > 0)
@@ -1234,8 +1234,8 @@ cJSON *cJSON_DetachItemFromArray(cJSON *array, int which)
 	c->prev = c->next = 0;
 	return c;
 }
-void cJSON_DeleteItemFromArray(cJSON *array, int which) { cJSON_Delete(cJSON_DetachItemFromArray(array, which)); }
-cJSON *cJSON_DetachItemFromObject(cJSON *object, const char *string)
+void cJSON_DeleteItemFromArray(cJSON *array, int which) { cJSON_Delete(cJSON_DetachItemFromArray(array, which)); } // mark:10
+cJSON *cJSON_DetachItemFromObject(cJSON *object, const char *string)											   // mark:11
 {
 	int i = 0;
 	cJSON *c = object->child;
@@ -1245,10 +1245,10 @@ cJSON *cJSON_DetachItemFromObject(cJSON *object, const char *string)
 		return cJSON_DetachItemFromArray(object, i);
 	return 0;
 }
-void cJSON_DeleteItemFromObject(cJSON *object, const char *string) { cJSON_Delete(cJSON_DetachItemFromObject(object, string)); }
+void cJSON_DeleteItemFromObject(cJSON *object, const char *string) { cJSON_Delete(cJSON_DetachItemFromObject(object, string)); } // mark:12
 
 /* 用新项替换数组/对象里的旧项 */
-void cJSON_InsertItemInArray(cJSON *array, int which, cJSON *newitem)
+void cJSON_InsertItemInArray(cJSON *array, int which, cJSON *newitem) // mark:13
 {
 	cJSON *c = array->child;
 	while (c && which > 0)
@@ -1378,7 +1378,7 @@ cJSON *cJSON_CreateIntArray(const int *numbers, int count) // 构建cJSON整型�
 	}
 	return a;
 }
-cJSON *cJSON_CreateFloatArray(const float *numbers, int count)
+cJSON *cJSON_CreateFloatArray(const float *numbers, int count) // mark:14
 {
 	int i;
 	cJSON *n = 0, *p = 0, *a = cJSON_CreateArray();
@@ -1393,7 +1393,7 @@ cJSON *cJSON_CreateFloatArray(const float *numbers, int count)
 	}
 	return a;
 }
-cJSON *cJSON_CreateDoubleArray(const double *numbers, int count)
+cJSON *cJSON_CreateDoubleArray(const double *numbers, int count) // mark:15
 {
 	int i;
 	cJSON *n = 0, *p = 0, *a = cJSON_CreateArray();
@@ -1424,7 +1424,7 @@ cJSON *cJSON_CreateStringArray(const char **strings, int count) // 构建cJSON�
 	return a;
 }
 
-/* Duplication */
+/* Duplication */ // mark:16
 cJSON *cJSON_Duplicate(cJSON *item, int recurse)
 {
 	cJSON *newitem, *cptr, *nptr = 0, *newchild;
@@ -1483,7 +1483,7 @@ cJSON *cJSON_Duplicate(cJSON *item, int recurse)
 	return newitem;
 }
 
-void cJSON_Minify(char *json)
+void cJSON_Minify(char *json) // mark:17
 {
 	char *into = json;
 	while (*json)
