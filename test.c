@@ -167,7 +167,7 @@ int main(int argc, const char *argv[])
 	dofile("../../tests/test5"); */
 
 	/* 一些用于简洁地构建对象的示例代码：*/
-	create_objects(); // mark:0
+	create_objects();
 
 	return 0;
 }
