@@ -14,16 +14,17 @@ static const char *ep; // 错误指针
 
 const char *cJSON_GetErrorPtr(void) { return ep; } // 获取错误指针，该指针指向出现错误的第一个字符
 
+/* 忽略大小写比较字符串 */
 static int cJSON_strcasecmp(const char *s1, const char *s2)
 {
-	if (!s1)
-		return (s1 == s2) ? 0 : 1;
-	if (!s2)
-		return 1;
-	for (; tolower(*s1) == tolower(*s2); ++s1, ++s2)
-		if (*s1 == 0)
-			return 0;
-	return tolower(*(const unsigned char *)s1) - tolower(*(const unsigned char *)s2);
+	if (!s1)																		  // s1空字符串
+		return (s1 == s2) ? 0 : 1;													  // 相等返回0，否则返回1
+	if (!s2)																		  // s2空字符串  这里并不是多此一举，防止下面空指针访问
+		return 1;																	  // s1非空，返回1
+	for (; tolower(*s1) == tolower(*s2); ++s1, ++s2)								  // 忽略大小写比较
+		if (*s1 == 0)																  // 字符串结束
+			return 0;																  // 相等返回0
+	return tolower(*(const unsigned char *)s1) - tolower(*(const unsigned char *)s2); // 有不同的字符，返回不同字符的差值
 }
 
 // 默认使用malloc和free作为内存分配和释放函数。
@@ -1283,11 +1284,11 @@ void cJSON_ReplaceItemInArray(cJSON *array, int which, cJSON *newitem) // 替换
 	c->next = c->prev = 0;			   // 断开旧元素
 	cJSON_Delete(c);				   // 释放旧元素
 }
-void cJSON_ReplaceItemInObject(cJSON *object, const char *string, cJSON *newitem)
+void cJSON_ReplaceItemInObject(cJSON *object, const char *string, cJSON *newitem) // 替换对象元素
 {
 	int i = 0;
-	cJSON *c = object->child;
-	while (c && cJSON_strcasecmp(c->string, string))
+	cJSON *c = object->child;						 // 指向首元素
+	while (c && cJSON_strcasecmp(c->string, string)) // mark:3
 		i++, c = c->next;
 	if (c)
 	{
