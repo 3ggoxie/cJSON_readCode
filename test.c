@@ -50,7 +50,7 @@ struct record
 };
 
 /* 创建一些对象用于演示 */
-void create_objects() // mark:1
+void create_objects()
 {
 	cJSON *root, *fmt, *img, *thm, *fld;
 	char *out;
@@ -119,28 +119,28 @@ void create_objects() // mark:1
 	printf("%s\n", out);	 // 打印文本
 	free(out);				 // 释放文本内存
 
-	/* Our array of "records": */ // mark:2
+	/* 实例化records数组: */
 
-	root = cJSON_CreateArray();
-	for (i = 0; i < 2; i++)
+	root = cJSON_CreateArray(); // 创建数组根节点
+	for (i = 0; i < 2; i++)		// 遍历数组
 	{
-		cJSON_AddItemToArray(root, fld = cJSON_CreateObject());
-		cJSON_AddStringToObject(fld, "precision", fields[i].precision);
-		cJSON_AddNumberToObject(fld, "Latitude", fields[i].lat);
-		cJSON_AddNumberToObject(fld, "Longitude", fields[i].lon);
-		cJSON_AddStringToObject(fld, "Address", fields[i].address);
-		cJSON_AddStringToObject(fld, "City", fields[i].city);
-		cJSON_AddStringToObject(fld, "State", fields[i].state);
-		cJSON_AddStringToObject(fld, "Zip", fields[i].zip);
-		cJSON_AddStringToObject(fld, "Country", fields[i].country);
+		cJSON_AddItemToArray(root, fld = cJSON_CreateObject());			// 添加数组元素对象fld
+		cJSON_AddStringToObject(fld, "precision", fields[i].precision); // 添加对象fld的precision成员
+		cJSON_AddNumberToObject(fld, "Latitude", fields[i].lat);		// 添加对象fld的lat成员
+		cJSON_AddNumberToObject(fld, "Longitude", fields[i].lon);		// 添加对象fld的lon成员
+		cJSON_AddStringToObject(fld, "Address", fields[i].address);		// 添加对象fld的address成员
+		cJSON_AddStringToObject(fld, "City", fields[i].city);			// 添加对象fld的city成员
+		cJSON_AddStringToObject(fld, "State", fields[i].state);			// 添加对象fld的state成员
+		cJSON_AddStringToObject(fld, "Zip", fields[i].zip);				//	添加对象fld的zip成员
+		cJSON_AddStringToObject(fld, "Country", fields[i].country);		// 添加对象fld的country成员
 	}
 
-	/*	cJSON_ReplaceItemInObject(cJSON_GetArrayItem(root,1),"City",cJSON_CreateIntArray(ids,4)); */
+	cJSON_ReplaceItemInObject(cJSON_GetArrayItem(root, 1), "City", cJSON_CreateIntArray(ids, 4)); // 把第2个数组对象中的city成员的键值替换为数组ids/*  */
 
-	out = cJSON_Print(root);
-	cJSON_Delete(root);
-	printf("%s\n", out);
-	free(out);
+	out = cJSON_Print(root); // 接收渲染后的文本
+	cJSON_Delete(root);		 // 删除records数组
+	printf("%s\n", out);	 // 打印文本
+	free(out);				 // 释放文本内存
 }
 
 int main(int argc, const char *argv[])
