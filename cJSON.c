@@ -585,15 +585,15 @@ cJSON *cJSON_Parse(const char *value) { return cJSON_ParseWithOpts(value, 0, 0);
 char *cJSON_Print(cJSON *item) { return print_value(item, 0, 1, 0); } // 默认调用深度为0
 /* 将一个cJSON数据项（实体或结构）不格式化渲染成文本形式。 */
 char *cJSON_PrintUnformatted(cJSON *item) { return print_value(item, 0, 0, 0); } // fmt参数为0代表不格式化
-
-char *cJSON_PrintBuffered(cJSON *item, int prebuffer, int fmt) // mark:4
+/* 预先分配缓冲区的方式渲染cJSON数据项 */
+char *cJSON_PrintBuffered(cJSON *item, int prebuffer, int fmt)
 {
-	printbuffer p;
-	p.buffer = (char *)cJSON_malloc(prebuffer);
-	p.length = prebuffer;
-	p.offset = 0;
-	return print_value(item, 0, fmt, &p);
-	return p.buffer;
+	printbuffer p;								// 创建缓冲区
+	p.buffer = (char *)cJSON_malloc(prebuffer); // 为缓冲区字符串分配内存
+	p.length = prebuffer;						// 设置缓冲区长度
+	p.offset = 0;								// 初始化缓冲区偏移量
+	return print_value(item, 0, fmt, &p);		// 调用print_value函数返回渲染后的文本
+												// 这里这个return不知道是干嘛用的，应该是写错了吧
 }
 
 /* 解析器核心 - 当遇到文本时，适当处理。 */
