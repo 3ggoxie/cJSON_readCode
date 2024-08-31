@@ -1,5 +1,5 @@
 /* cJSON */
-/* JSON parser in C. */ // mark:0
+/* JSON parser in C. */
 
 #include <string.h>
 #include <stdio.h>
@@ -526,7 +526,7 @@ static char *print_string_ptr(const char *str, printbuffer *p)
 /* 对一个项调用print_string_ptr (which is useful) */
 static char *print_string(cJSON *item, printbuffer *p) { return print_string_ptr(item->valuestring, p); }
 
-/* Predeclare these prototypes. */ // mark:2
+/* 预先声明这些函数原型 */
 static const char *parse_value(cJSON *item, const char *value);
 static char *print_value(cJSON *item, int depth, int fmt, printbuffer *p);
 static const char *parse_array(cJSON *item, const char *value);
@@ -581,9 +581,10 @@ cJSON *cJSON_ParseWithOpts(const char *value, const char **return_parse_end, int
 /* cJSON_Parse的默认选项 */
 cJSON *cJSON_Parse(const char *value) { return cJSON_ParseWithOpts(value, 0, 0); }
 
-/* 将一个cJSON数据项（实体或结构）渲染成文本形式。 */
-char *cJSON_Print(cJSON *item) { return print_value(item, 0, 1, 0); }			 // 默认调用深度为0
-char *cJSON_PrintUnformatted(cJSON *item) { return print_value(item, 0, 0, 0); } // mark:3
+/* 将一个cJSON数据项（实体或结构）按格式渲染成文本形式。 */
+char *cJSON_Print(cJSON *item) { return print_value(item, 0, 1, 0); } // 默认调用深度为0
+/* 将一个cJSON数据项（实体或结构）不格式化渲染成文本形式。 */
+char *cJSON_PrintUnformatted(cJSON *item) { return print_value(item, 0, 0, 0); } // fmt参数为0代表不格式化
 
 char *cJSON_PrintBuffered(cJSON *item, int prebuffer, int fmt) // mark:4
 {
